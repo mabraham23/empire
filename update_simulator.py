@@ -44,7 +44,7 @@ class Update():
     print()
     for key in self.sectors:
       # calculate and set avail for each sector
-      # self.sectors[key]['avail'] = self.calculateAvail(self.sectors[key]['civil'], self.sectors[key]['work'], self.sectors[key]['milit'], self.sectors[key]['uw'])
+      self.sectors[key]['avail'] = self.calculateAvail(self.sectors[key]['civil'], self.sectors[key]['work'], self.sectors[key]['milit'], self.sectors[key]['uw'])
       # distribute materials
       for item in self.dist_items:
         thresh = self.sectors[key][item]
