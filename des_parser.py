@@ -10,7 +10,7 @@ for line in sys.stdin.readlines():
 	line = line.strip()
 	words = line.split()
 	if ( len(words) > 15 ):
-		des[words[2].replace('"', '')] = int(words[0])
+		des[int(words[0])] = {"name": words[1].replace('"', ''), "symbol": words[2].replace('"','')}
 	else:
 		continue
 
