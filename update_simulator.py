@@ -67,12 +67,14 @@ class Update():
 
 
 def runCommands():
-  u = Update()
+  # u = Update()
   # d = Designate('(-1, -3)', 'm')
   # d.designate()
   # d.save()
-  u.update()
+  # u.update()
   # u.save()
+  C = Capital('(0, 2)')
+  C.capital()
 
 
 runCommands()

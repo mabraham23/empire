@@ -25,6 +25,11 @@ if os.path.exists("items.p"):
 	items_list = pickle.load(fin)
 	fin.close()
 
+if os.path.exists("country.p"):
+	fin = open("country.p", "rb")
+	country = pickle.load(fin)
+	fin.close()
+
 class Action():
 	def __init__(self):
 		self.weight_dict = { 'bar': 50, 'gun': 10, 'rad': 8, 'dust': 5, 'uw': 2, 'other': 1, }
@@ -83,6 +88,9 @@ class Action():
 		x = int(sc[0])
 		y = int(sc[1])
 		return x,y
+
+	def intsToCoord(self, x, y):
+		return "(" + str(x) + ", " + str(y) + ")"
 
 	def calculatePathCost(self, source, dest):
 		if source in sectors:
@@ -281,9 +289,14 @@ class Capital(Action):
 
 	def capital(self):
 		if sectors[self.sect]['des'] in [1, 5]:
-			print("capital des", des_dict['c'])
-			sectors[sect]['des'] = des_dict['c']
+			coord = self.intsToCoord(country['xcap'], country['ycap'])	
+			if self.sect != coord:
+				x, y = self.coordToInt(self.sect)
+				country['xcap'] = x
+				country['ycap'] = y
+			else:
+				print("the sector", self.sect, "is already a capitol")
 		else:
-			print("the sector must have a designation of type 'c' (capital) or '^' (mountain) to be a capital. Sector of type", "'" + key_list[val_list.index(sectors[self.sect]['des'])] + "' given.")
+			print("the sector must have a designation of type 'c' (capital) or '^' (mountain) to be a capital. Sector of type" + " '" + des_dict[sectors[self.sect]['des']]['symbol'] + "' " + "given")
 
 

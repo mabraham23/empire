@@ -29,12 +29,13 @@ for line in sys.stdin.readlines():
 	words = line.split()
 	if len(words) > 1:
 		if words[1] == "meta":
-			doc_type = "meta"	
-			continue
+			if words[2] == "sect":
+				doc_type = "meta-sect"	
+				continue
 		elif words[1] == "sect":
 			doc_type = "sect"	
 			continue
-		if doc_type == "meta":
+		if doc_type == "meta-sect":
 			key = words[0].replace('"','')
 			sectorinfo[key] = ""
 		elif doc_type == "sect":
@@ -53,6 +54,7 @@ for line in sys.stdin.readlines():
 			tup = str((x,y))	
 			key = tup
 			sectors[key] = new_sector_info 
+
 
 if doc_type == "sect":				
 	print(sectors)
