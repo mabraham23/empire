@@ -9,15 +9,15 @@ if os.path.exists("country.p"):
 	fin = open("country.p", "rb")
 	country = pickle.load(fin)
 	fin.close()
+else:
+  country = {}
 
 if os.path.exists("country-info.p"):
 	fin = open("country-info.p", "rb")
 	countryinfo= pickle.load(fin)
 	fin.close()
-
 else:
   countryinfo = {}
-  country = {}
 
 for line in sys.stdin.readlines():
 	line = line.strip()
@@ -52,23 +52,9 @@ for line in sys.stdin.readlines():
 
 if doc_type == "country":				
 	print(country)
-	# for key in sectors:
-	# 	print()
-	# 	print()
-	# 	print(key,":")
-	# 	for key2 in sectors[key]:
-	# 		print(key2,":",sectors[key][key2])	
-	# 	print()
-	# 	print()
 
 elif doc_type == "meta":				
 	print(countryinfo)
-	# for key in sectorinfo:
-	# 	print()
-	# 	print()
-	# 	print(key,":")
-	# 	print()
-	# 	print()
 
 fout = open("country-info.p", "wb")
 pickle.dump(countryinfo, fout)
