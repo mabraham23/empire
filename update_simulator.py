@@ -8,30 +8,14 @@ sys.path.append(".")
 from actions import Action, Move, Distribute, Threshold, Designate, Build, Capital
 from model import *
 
+item_thresh_names = ['c_dist','m_dist','s_dist','g_dist','p_dist','i_dist','d_dist','b_dist','f_dist','o_dist','l_dist','h_dist','u_dist','r_dist']
+thresh_name_to_item = {'c_dist': 'civil','m_dist': 'milit','s_dist': 'shell','g_dist':'gun','p_dist':'petrol','i_dist':'iron','d_dist':'dust','b_dist': 'bar','f_dist':'food','o_dist':'oil','l_dist':'lcm','h_dist':'hcm','u_dist': 'uw','r_dist': 'rad'}
+item_to_thresh_name = {'civil': 'c_dist','milit': 'm_dist','shell': 's_dist','gun':'g_dist','petrol':'p_dist','iron':'i_dist','dust':'d_dist','bar': 'b_dist','food':'f_dist','oil':'o_dist','lcm':'l_dist','hcm':'h_dist','uw': 'u_dist','rad': 'r_dist'}
+
 class Update():
 
   def __init__(self):
-    self.sectors = {}
-    self.country = {}
-    self.dist_items = ['c_dist','m_dist','s_dist','g_dist','p_dist','i_dist','d_dist','b_dist','f_dist','o_dist','l_dist','h_dist','u_dist','r_dist']
-    self.dist_dict = {'c_dist': 'civil','m_dist': 'milit','s_dist': 'shell','g_dist':'gun','p_dist':'petrol','i_dist':'iron','d_dist':'dust','b_dist': 'bar','f_dist':'food','o_dist':'oil','l_dist':'lcm','h_dist':'hcm','u_dist': 'uw','r_dist': 'rad'}
-
-  def getUpdatedSectors(self):
-    if os.path.exists("sectors.p"):
-      fin = open("sectors.p", "rb")
-      bad_sectors = pickle.load(fin)
-      fin.close()
-
-      sectors = {}
-      for key in bad_sectors:
-        new = copy.deepcopy(bad_sectors[key])
-        sectors[key] = new
-      self.sectors = sectors
-    
-    if os.path.exists("country.p"):
-      fin = open("country.p", "rb")
-      self.country = pickle.load(fin)
-      fin.close()
+    pass
 
   def getItemFromDes(self, sect):
     des = self.sectors[sect]['des']
@@ -46,126 +30,158 @@ class Update():
     item = self.dist_dict[dist]
     return item
 
-  def show(self):
-    self.getUpdatedSectors()
+  def show(self, model):
     print()
-    print(self.country)
+    print(model['country'])
     print()
-    for key in self.sectors:
+    for key in model['sectors']:
       print()
       print(key, ":")
-      print(self.sectors[key])
+      print(model['sectors'][key])
       print()
-
-  def show_sect(self, x, y):
-    self.getUpdatedSectors()
-    sect = "(" + str(x) + ", " + str(y) + ")"
-    print()
-    print(sect)
-    print()
-    for key in self.sectors[sect]:
-      print(key, ":", self.sectors[sect][key])
-    print()
   
-  def save(self):
-    fout = open("sectors.p", "wb")
-    pickle.dump(self.sectors, fout)
-    fout.close()
-
-    fout = open("country.p", "wb")
-    pickle.dump(self.country, fout)
-    fout.close()
-  
-  def calculateAvail(self, civ, sctwork, milit, uw):
+  def calculate_avail(self, civ, sctwork, milit, uw):
     etu = 60
     avail = round((civ * sctwork / 100.0 + milit / 2.5 + uw) * etu / 100.0)
     return avail
+
+  def get_dist_center_of_sector(self, sector):
+    x = sector['xdist']
+    y = sector['ydist']
+    dist_sect = "(" + str(x) + ", " + str(y) + ")"
+    return dist_sect
+
+
+  def update_new_sectors(self, model):
+    for key in model['sectors']:
+      if ( model['sectors'][key]['newdes'] != model['sectors'][key]['des'] ):
+        model['sectors'][key]['des'] = model['sectors'][key]['newdes']
+
+  def set_avail(self, model):
+    for key in model['sectors']:
+      model['sectors'][key]['avail'] = self.calculate_avail(model['sectors'][key]['civil'], model['sectors'][key]['work'], model['sectors'][key]['milit'], model['sectors'][key]['uw'])
+
+
+  def send_to_distribution(self, model):
+    for key in model['sectors']:
+      for item in item_thresh_names:
+        item_thresh = model['sectors'][key][item]
+        if item_thresh > 0:
+          t_item = thresh_name_to_item[item]
+          sect_item_amount = model['sectors'][key][t_item]
+          if sect_item_amount > item_thresh:
+            # add new items to distribution center 
+            dist_sect = self.get_dist_center_of_sector(model['sectors'][key])
+            surplus = sect_item_amount - item_thresh
+            m = Move(t_item, key, surplus, dist_sect)
+            m.dist_move(model)
+
+  def distribute_to_sectors(self, model):
+    for key in model['sectors']:
+      for item in item_thresh_names:
+        item_thresh = model['sectors'][key][item]
+        if item_thresh > 0:
+          t_item = thresh_name_to_item[item]
+          sect_item_amount = model['sectors'][key][t_item]
+          if sect_item_amount < item_thresh:
+            dist_sect = self.get_dist_center_of_sector(model['sectors'][key])
+            difference = item_thresh - sect_item_amount
+            m = Move(t_item, dist_sect, difference, key)
+            m.dist_move(model)
+
+  def sector_effic(self, model):
+    pass
+
+  def harvest_natural_reso(self, model):
+    pass
+
+  def produce_manufactured_goods(self, model):
+    pass
+
+  def ship_effic(self, model):
+    pass
+
+  def food_consumption(self, model):
+    pass
+
+  def population_growth(self, model):
+    pass
+
       
-  def update(self):
-    self.getUpdatedSectors()
-
-    print()
-    # print("before", self.sectors['(0, 0)'])
-    print()
-    for key in self.sectors:
-      # calculate and set avail for each sector
-      self.sectors[key]['avail'] = self.calculateAvail(self.sectors[key]['civil'], self.sectors[key]['work'], self.sectors[key]['milit'], self.sectors[key]['uw'])
-      # send materials from sectors to distribution center
-      # for item in self.dist_items:
-      des = self.sectors[key]['des']
-      if ( des != "h" or des != "c"):
-        item = self.getItemFromDes(key)
-        thresh = self.sectors[key][item]
-        if thresh > 0:
-          amount = self.sectors[key][self.dist_dict[item]]
-          if amount > thresh:
-            num = amount - thresh
-          dest = "(" + str(self.sectors[key]['xdist']) + ", " + str(self.sectors[key]['ydist']) + ")"
-          move_item = self.dist_dict[item]
-          m = Move(move_item, key, num, dest)
-          m.dist_move()
-
-    print()
-    print("after", self.sectors['(0, 0)'])
-    print()
+  def update(self, model):
+    #prepare stage
+    # do_feed()
+    #avail set
+    #production stage
+    # produce_sect()
+    # effic updated
+    # change new_des to des
+    self.update_new_sectors(model)
+    # calculate and set avail for each sector
+    self.set_avail(model)
+    # distribute items from outside sectors to distribution center
+    self.send_to_distribution(model)
+    # distribute item from distribution center to outside sectors
+    self.distribute_to_sectors(model)
         
 
 
-      # if ( self.sectors[key]['newdes'] != self.sectors[key]['des'] ):
-      #   self.sectors[key]['des'] = self.sectors[key]['newdes']
-      
+def print_sector(model, sect):
+  print()
+  print(sect)
+  print(model['sectors'][sect])
+  print()
 
+def print_country(model):
+  print()
+  print(model['country'])
+  print()
 
 def runCommands():
   model = createModel()
-  M = Move('civil', '(-1, -3)', 100, '(0, 0)')
-  M.move(model) 
-  # Model = Model()
-  # model.move()
-  # model.capital()
+  M = Move('food', '(2, 0)', 300, '(0, 0)')
+  M.move(model)
 
-  # model.run()
-  # model = Model()
 
-  # move = Move('civil', '(-1, -3)', 100, '(0, 0)')
-  # model.exec(move)
-  # update = update()
-  # model.exec(update)
+  u = Update()
+  u.update(model)
+  # print_sector(model, '(-1, -3)')
+  # print_sector(model, '(0, 2)')
+  # M = Move('food', '(-1, -3)', 100, '(0, 2)')
+  # M.dist_move(model)
+  # print_country(model)
+  # B = Build('ship', '(1, -1)', 'fishing', 1)
+  # B.build(model)
+  # print_country(model)
+  # t = Threshold('dust', '(-1, -3)', 500)
+  # t.threshold(model)
+  # print_sector(model, '(-1, -3)')
+  # print_sector(model, '(0, 2)')
+  # d = Designate('(1, 1)', 'h')
+  # d.designate(model)
+  # u = Update()
+  # u.update(model)
+  # print_sector(model, '(-1, -3)')
+  # d = Distribute('(-1, -3)', '(1, 1)')
+  # d.distribute(model)
+  # print_sector(model, '(-1, -3)')
   # a = Action()
+  # print_sector(model, '(-1, -3)')
+  # d = Designate('(-1, -3)', 'c')
+  # d.designate(model)
+  # print_sector(model, '(-1, -3)')
   # u = Update()
-  # u.show()
-  # u.show()
-  # a.save()
-  # u.show()
-  # u.show()
-  # A = Action()
-  # A.show_items()
-  # m = Move('civil', '(-1, -3)', 100, '(0, 0)')
-  # m.move()
-  # m.save()
-  # m.show_sect('(0, 0)')
-  # m.move()
-  # m.show_sect('(0, 0)')
-  # m.save()
-  # u = Update()
-  # u.update()
-  # u.show_sect(0,0)
-  # u.update()
-  # u = Update()
-  # d = Designate('(0, 2)', 'c')
-  # d.designate()
-  # d.save()
-  # u.update()
-  # u.save()
-  # d.save()
-  # u.update()
-  # u.save()
-  # C = Capital('(0, 2)')
-  # C.capital()
-  # C.save()
+  # u.update(model)
+  # print_sector(model, '(-1, -3)')
+  # print_country(model)
+  # c = Capital('(-1, -3)')
+  # c.capital(model)
+  # print_country(model)
 
 
-  # d.show()
+# need to update mobility cost when distributing
+# need to find where ship is shown
+
 
 
 runCommands()
