@@ -129,8 +129,8 @@ class Action():
     return sym_des
 
 
-class Move(Action):
 
+class DistMove(Action):
   def __init__(self,item,source,number,dest):
     super().__init__()
     self.item = item
@@ -138,7 +138,7 @@ class Move(Action):
     self.number = number
     self.dest = dest
 
-  def dist_move(self, model):
+  def run(self, model):
     curr = model['sectors'][self.source][self.item]
     mcost = (self.calculatePathCost(model['sectors'], self.source, self.dest) / 10 * self.getWeight(self.item) / 10)
     print("mcost", mcost)
@@ -170,7 +170,17 @@ class Move(Action):
         print("limit has been reached for", self.item, "in sector", self.dest + ".", "truncated at", new_amount)
       model['sectors'][self.dest][self.item] = new_amount
 
-  def move(self, model):
+class Move(Action):
+
+  def __init__(self,item,source,number,dest):
+    super().__init__()
+    self.item = item
+    self.source = source
+    self.number = number
+    self.dest = dest
+
+
+  def run(self, model):
     curr = model['sectors'][self.source][self.item]
     bonus = self.getBonus(model['sectors'][self.source]['des'], self.item)
     mob_cost = int((self.number) * (self.getWeight(self.item)) * (self.calculatePathCost(model['sectors'], self.source, self.dest)) / bonus)
@@ -208,7 +218,7 @@ class Distribute(Action):
     self.source = source
     self.dest = dest 
 
-  def distribute(self, model):
+  def run(self, model):
     if self.source in model['sectors']:
       if self.dest in model['sectors']:
         if model['sectors'][self.dest]['des'] in [12, 13]:
@@ -230,14 +240,14 @@ class Threshold(Action):
     self.sect = sect
     self.thresh = thresh
 
-  def threshold(self, model):
+  def run(self, model):
     if self.item in self.get_items_list():
       if self.sect in self.get_sector_list(model):
-        if (self.thresh > 0 and self.thresh < 9999):
+        if (self.thresh >= 0 and self.thresh < 9999):
           thresh = dist_item_dict[self.item]
           model['sectors'][self.sect][thresh] = int(self.thresh)
         else:
-          print("invalid value for thresh given:", self.thresh, "Value must be positive interger greater than 0 and less than 9999")
+          print("invalid value for thresh given:", self.thresh, "Value must be positive interger greater than or equal to 0 and less than 9999")
       else:
         print("source given is not a valid sector; sector given:", self.source, "valid sectors:", self.get_sector_list(model))
     else:
@@ -252,7 +262,7 @@ class Designate(Action):
     self.sect = sect
     self.des = des 
 
-  def designate(self, model):
+  def run(self, model):
     if self.des in self.getDesList():
       if model['sectors'][self.sect]['coastal'] == 0 and self.des == 'h':
         print("only coastal sects may be designated as harbors, sector given", self.sect)	
@@ -275,7 +285,7 @@ class Build(Action):
     self.v_type = v_type
     self.quantity = quantity
 
-  def build(self, model):
+  def run(self, model):
     if self.kind in build_types:
       if self.sect in self.get_sector_list(model):
         if model['sectors'][self.sect]['des'] == 12:
@@ -317,7 +327,7 @@ class Capital(Action):
   def __init__(self,sect):
     self.sect = sect
 
-  def capital(self, model):
+  def run(self, model):
     if model['sectors'][self.sect]['des'] in [1, 5]:
       coord = self.intsToCoord(model['country']['xcap'], model['country']['ycap'])	
       if self.sect != coord:

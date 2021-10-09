@@ -5,7 +5,7 @@ import copy
 
 sys.path.append(".")
 
-from actions import Action, Move, Distribute, Threshold, Designate, Build, Capital
+from actions import Action, DistMove, Move, Distribute, Threshold, Designate, Build, Capital
 from model import *
 
 item_thresh_names = ['c_dist','m_dist','s_dist','g_dist','p_dist','i_dist','d_dist','b_dist','f_dist','o_dist','l_dist','h_dist','u_dist','r_dist']
@@ -73,8 +73,8 @@ class Update():
             # add new items to distribution center 
             dist_sect = self.get_dist_center_of_sector(model['sectors'][key])
             surplus = sect_item_amount - item_thresh
-            m = Move(t_item, key, surplus, dist_sect)
-            m.dist_move(model)
+            m = DistMove(t_item, key, surplus, dist_sect)
+            m.run(model)
 
   def distribute_to_sectors(self, model):
     for key in model['sectors']:
@@ -86,14 +86,25 @@ class Update():
           if sect_item_amount < item_thresh:
             dist_sect = self.get_dist_center_of_sector(model['sectors'][key])
             difference = item_thresh - sect_item_amount
-            m = Move(t_item, dist_sect, difference, key)
-            m.dist_move(model)
+            m = DistMove(t_item, dist_sect, difference, key)
+            m.run(model)
 
   def sector_effic(self, model):
     pass
 
   def harvest_natural_reso(self, model):
-    pass
+    if model['sectors']['effic'] > 60:
+      for key in model['sectors']:
+        product_effic = model['sectors'][key]['effic'] / 100
+        if model['sectors'][key]['des'] == 'm':
+          product_effic *= (model['sectors'][key]['min'] / 100)
+          worker_limit = (model['sectors'][key]['avail'] * product_effic) 
+          material_consume = min(worker_limit, model['sectors'][key]['avail'])
+          output = material_consume * product_effic
+          model['sectors'][key]['iron'] += output
+          model['sectors'][key]['avail'] -= round(material_consume/product_effic)
+
+        
 
   def produce_manufactured_goods(self, model):
     pass
@@ -139,12 +150,14 @@ def print_country(model):
 
 def runCommands():
   model = createModel()
-  M = Move('food', '(2, 0)', 300, '(0, 0)')
-  M.move(model)
-
-
   u = Update()
-  u.update(model)
+  u.show(model)
+  # M = Move('food', '(2, 0)', 300, '(0, 0)')
+  # M.move(model)
+
+
+  # u = Update()
+  # u.update(model)
   # print_sector(model, '(-1, -3)')
   # print_sector(model, '(0, 2)')
   # M = Move('food', '(-1, -3)', 100, '(0, 2)')
