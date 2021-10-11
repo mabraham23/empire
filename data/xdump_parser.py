@@ -5,15 +5,15 @@ import os
 import pickle
 import copy
 
-if os.path.exists("sectors.p"):
-	fin = open("sectors.p", "rb")
+if os.path.exists("data/sectors.p"):
+	fin = open("data/sectors.p", "rb")
 	sectors = pickle.load(fin)
 	fin.close()
 else:
 	sectors = {}
 
-if os.path.exists("sector-info.p"):
-	fin = open("sector-info.p", "rb")
+if os.path.exists("data/sector-info.p"):
+	fin = open("data/sector-info.p", "rb")
 	sectorinfo = pickle.load(fin)
 	fin.close()
 else:
@@ -52,14 +52,14 @@ if doc_type == "sect":
 		print(sectors[key])
 		print()
 
-	fout = open("sectors.p", "wb")
+	fout = open("data/sectors.p", "wb")
 	pickle.dump(sectors, fout)
 	fout.close()
 
 elif doc_type == "meta-sect":				
 	print(sectorinfo)
 
-	fout = open("sector-info.p", "wb")
+	fout = open("data/sector-info.p", "wb")
 	pickle.dump(sectorinfo, fout)
 	fout.close()
 

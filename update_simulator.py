@@ -118,6 +118,9 @@ class Update():
   def population_growth(self, model):
     pass
 
+  def refil_mobility(self, model):
+    for key in model['sectors']:
+      model["sectors"][key]["mobil"] = 127
       
   def update(self, model):
     #prepare stage
@@ -127,13 +130,15 @@ class Update():
     # produce_sect()
     # effic updated
     # change new_des to des
-    self.update_new_sectors(model)
+    # self.update_new_sectors(model)
     # calculate and set avail for each sector
-    self.set_avail(model)
+    # self.set_avail(model)
     # distribute items from outside sectors to distribution center
-    self.send_to_distribution(model)
+    # self.send_to_distribution(model)
     # distribute item from distribution center to outside sectors
-    self.distribute_to_sectors(model)
+    # self.distribute_to_sectors(model)
+    self.refil_mobility(model)
+    return model
         
 
 
@@ -148,10 +153,10 @@ def print_country(model):
   print(model['country'])
   print()
 
-def runCommands():
-  model = createModel()
-  u = Update()
-  u.show(model)
+# def runCommands():
+#   model = createModel()
+#   u = Update()
+  # u.show(model)
   # M = Move('food', '(2, 0)', 300, '(0, 0)')
   # M.move(model)
 
@@ -197,4 +202,4 @@ def runCommands():
 
 
 
-runCommands()
+# runCommands()

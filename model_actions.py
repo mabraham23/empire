@@ -1,8 +1,9 @@
-from actions import Action, Capital, Designate, Distribute, Threshold
+from actions import Action, Capital, Designate, Distribute, Threshold, Move
 from model import createModel
 from state import State
 from update_simulator import Update
 import copy
+
 
 class Model_Actions():
 
@@ -123,24 +124,105 @@ class Model_Actions():
 
   def macro_populate(self, state):
     moves_list = []
-    stragey = ""
+    strategey = ""
     pop_dict = {}
     mine_pop = 0
     agr_pop = 0
-    total_pop = 0
+    city_pop = 0
+    lcm_pop = 0
+    hcm_pop = 0
+    harb_pop = 0
     total_iron = 0
     total_food = 0
+    total_pop = 0
+    num_sects = 0
     for key in state.model['sectors']:
       pop_dict[key] = state.model["sectors"][key]["civil"]
       total_pop += state.model["sectors"][key]["civil"]
       total_iron+= state.model["sectors"][key]["iron"]
       total_food+= state.model["sectors"][key]["food"]
+      num_sects += 1
       # mine
       if state.model['sectors'][key]['des'] == 10:
         mine_pop += state.model["sectors"][key]["civil"]
       # agribusiness
       elif state.model['sectors'][key]['des'] == 15:
         agr_pop += state.model["sectors"][key]["civil"]
+
+      # capital or city population
+      elif state.model['sectors'][key]['des'] == 5:
+        city_pop += state.model["sectors"][key]["civil"]
+
+      # harbor population
+      elif state.model['sectors'][key]['des'] == 12:
+        harb_pop += state.model["sectors"][key]["civil"]
+
+      # lcm population
+      elif state.model['sectors'][key]['des'] == 17:
+        lcm_pop += state.model["sectors"][key]["civil"]
+
+      # hcm population
+      elif state.model['sectors'][key]['des'] == 18:
+        hcm_pop += state.model["sectors"][key]["civil"]
+
+    # agriculture heavy 
+    # 3 agric 40 %
+    # 3 mine  20 %   
+    # 1 lcm   10 % 
+    # 1 hcm   10 %
+    # 1 city  10 %
+    # 1 harbor 10 %
+
+    # evenly distribute
+    even_pop = round( total_pop / num_sects)
+    over = []
+    under = []
+    small_list = []
+    for key in state.model['sectors']:
+      if state.model['sectors'][key]['civil'] > even_pop:
+        over_item = {}
+        over_item["sect"] = key
+        over_item["civil"] = state.model['sectors'][key]['civil']
+        over_item["mobil"] = state.model['sectors'][key]['mobil']
+        over.append(over_item)
+        
+      else:
+        small_list.append(key)
+        under_item = {}
+        under_item["sect"] = key
+        under_item["civil"] = state.model['sectors'][key]['civil']
+        under.append(under_item)
+
+    # for big in over:
+    #   for small in under:
+    #     if (big["mobil"] <= 0):
+    #       continue
+    #     m = Move()
+    #     max_amount, max_mobil = m.calc_max_move(state.model, big["sect"], small["sect"], "civil")
+    #     if max_amount > 0:
+    #       if (small["civil"] + max_amount) >= even_pop:
+    #         continue
+    #       else:
+    #         small["civil"] += max_amount
+    #         big["mobil"] -= max_mobil
+    #         big["civil"] -= max_amount
+    #         m = Move("civil", big["sect"], max_amount, small["sect"])
+    #         moves_list.append(m)
+    #     else: 
+    #       continue
+      
+    for big in over:
+      m = Move()
+      move_amounts = m.calc_max_move_list(state.model, big["sect"], small_list, "civil", even_pop)
+      for sect in move_amounts:
+        m = Move("civil", big["sect"], sect["amount"], sect["dest"])
+        moves_list.append(m)
+
+    return moves_list
+
+
+
+    
 
 
   def macro_distribute(self, state):
@@ -182,7 +264,10 @@ class Model_Actions():
 
   def macro_update(self, state):
     u = Update()
-    u.update(state.model)
+    model = u.update(state.model)
+    new_model = copy.deepcopy(model)
+    new_state = State(new_model, state, "none", "cost")
+    return new_state
 
   def build(self, state):
     #decide when it's time to build 
@@ -190,8 +275,39 @@ class Model_Actions():
 
   def create_actions(self, state):
     # moves_list = self.macro_designate(state)
-    moves_list = self.macro_distribute(state)
-    self.result(state, moves_list)
+    # moves_list = self.macro_distribute(state)
+
+    # u = Update()
+    # print()
+    # print("first")
+    # u.show(state.model)
+    # print()
+
+    ml1 = self.macro_populate(state)
+    s2 = self.result(state, ml1)
+
+    s3 = self.macro_update(s2)
+
+    ml2 = self.macro_populate(s3)
+    s4 = self.result(s3, ml2)
+
+    s5 = self.macro_update(s4)
+
+    ml3 = self.macro_populate(s5)
+    s6 = self.result(s5, ml3)
+
+    s7 = self.macro_update(s6)
+
+    ml4 = self.macro_populate(s7)
+    s8 = self.result(s7, ml4)
+
+
+    u = Update()
+    print()
+    print("last")
+    u.show(s8.model)
+    print()
+
     # if (state.arriving_action == "update"):
     #   self.macro_designate(state)
     # elif (state.arriving_action == "designate"):
@@ -212,9 +328,13 @@ class Model_Actions():
     model_copy = copy.deepcopy(state_1.model)
     for action in actions_list:
       action.run(model_copy)
-    u = Update()
-    print("this is the start ")
-    u.show(model_copy)
+    # u = Update()
+    # print()
+    # print("after running")
+    # u.show(model_copy)
+    # print()
+    state_2 = State(model_copy, state_1, "none", 0)
+    return state_2
     
 
     # state_2 = state(model_copy, parent, arriving_action, path_cost)
@@ -231,12 +351,12 @@ class Model_Actions():
 def run():
   m = Model_Actions()
   model = createModel()
-  d = Designate('(1, -1)', 'm')
-  d.run(model)
-  d = Designate('(-1, -3)', 'h')
-  d.run(model)
-  u = Update()
-  u.update(model)
+  # d = Designate('(1, -1)', 'm')
+  # d.run(model)
+  # d = Designate('(-1, -3)', 'h')
+  # d.run(model)
+  # u = Update()
+  # u.update(model)
   s = State(model, 0, "update", 0)
   m.create_actions(s)
 

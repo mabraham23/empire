@@ -4,6 +4,7 @@ import sys
 import os
 import pickle
 import copy
+import math
 
 if os.path.exists("data/designations.p"):
   fin = open("data/designations.p", "rb")
@@ -170,15 +171,58 @@ class DistMove(Action):
         print("limit has been reached for", self.item, "in sector", self.dest + ".", "truncated at", new_amount)
       model['sectors'][self.dest][self.item] = new_amount
 
+
 class Move(Action):
 
-  def __init__(self,item,source,number,dest):
+  def __init__(self,item=0,source=0,number=0,dest=0):
     super().__init__()
     self.item = item
     self.source = source
     self.number = number
     self.dest = dest
 
+  def calc_mobility(self, model):
+    bonus = self.getBonus(model['sectors'][self.source]['des'], self.item)
+    mob_cost = int((self.number) * (self.getWeight(self.item)) * (self.calculatePathCost(model['sectors'], self.source, self.dest)) / bonus)
+    return mob_cost
+
+  def calc_param_mobil(self, model, source, dest, amount, item):
+    bonus = self.getBonus(model['sectors'][source]['des'], item)
+    mob_cost = int((amount) * (self.getWeight(item)) * (self.calculatePathCost(model['sectors'], source, dest)) / bonus)
+    return mob_cost
+
+  def calc_max_move(self, model, source, dest, item ):
+    max_mobil = 0
+    amount = 1
+    while max_mobil <= model['sectors'][source]["mobil"]:
+      max_mobil = self.calc_param_mobil(model, source, dest, amount, item)
+      amount += 1
+    return (amount -2), max_mobil
+
+  def calc_max_move_list(self, model, source, dest_list, item , goal):
+    max_mobil = model['sectors'][source]["mobil"] 
+    move_amounts = []
+    total_diff = 0
+    for dest in dest_list:
+      curr = model["sectors"][dest][item]
+      diff = goal - curr
+      total_diff += diff
+    for dest in dest_list:
+      model["sectors"][dest][item]
+      curr = model["sectors"][dest][item]
+      diff = goal - curr
+      dest_goal_perc = diff / total_diff
+      allocated_mob = math.floor(dest_goal_perc * max_mobil)
+      amount = 1
+      sect_mobil = 0
+      while sect_mobil <= allocated_mob and (amount + curr) != goal:
+        sect_mobil = self.calc_param_mobil(model, source, dest, amount, item)
+        amount += 1
+      move_item = {} 
+      move_item["dest"] = dest
+      move_item["amount"] = amount - 2
+      move_amounts.append(move_item)
+    return move_amounts
 
   def run(self, model):
     curr = model['sectors'][self.source][self.item]

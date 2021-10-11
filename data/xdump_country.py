@@ -5,15 +5,15 @@ import os
 import pickle
 import copy
 
-if os.path.exists("country.p"):
-	fin = open("country.p", "rb")
+if os.path.exists("data/country.p"):
+	fin = open("data/country.p", "rb")
 	country = pickle.load(fin)
 	fin.close()
 else:
   country = {}
 
-if os.path.exists("country-info.p"):
-	fin = open("country-info.p", "rb")
+if os.path.exists("data/country-info.p"):
+	fin = open("data/country-info.p", "rb")
 	countryinfo= pickle.load(fin)
 	fin.close()
 else:
@@ -56,10 +56,10 @@ if doc_type == "country":
 elif doc_type == "meta":				
 	print(countryinfo)
 
-fout = open("country-info.p", "wb")
+fout = open("data/country-info.p", "wb")
 pickle.dump(countryinfo, fout)
 fout.close()
 
-fout = open("country.p", "wb")
+fout = open("data/country.p", "wb")
 pickle.dump(country, fout)
 fout.close()
