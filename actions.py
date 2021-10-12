@@ -58,6 +58,9 @@ class Action():
     else:
       return weight_dict['other']		
 
+  def printActions(self, actions):
+    print(actions)
+
   def getDesList(self):
     dl = []
     for key in des_dict:
@@ -155,17 +158,17 @@ class DistMove(Action):
     else:
       model['sectors'][self.source][self.item] = new_amount
       model['sectors'][self.source]['mobil'] = new_mob
-      print("number of", self.item, "before distribution from sector", self.source, "is", curr)
-      print("number of", self.item, "remaining in source sector", self.source, "after distribution", new_amount)
-      print()
-      print("number of mob before distribution from source sector", self.source, "is", mob_sect)
-      print("number of mob remaining in source sector", self.source, "after distribution", new_mob)
-      print()
+      # print("number of", self.item, "before distribution from sector", self.source, "is", curr)
+      # print("number of", self.item, "remaining in source sector", self.source, "after distribution", new_amount)
+      # print()
+      # print("number of mob before distribution from source sector", self.source, "is", mob_sect)
+      # print("number of mob remaining in source sector", self.source, "after distribution", new_mob)
+      # print()
       dest_curr = model['sectors'][self.dest][self.item]
       new_amount = dest_curr + self.number
-      print()
-      print("number of", self.item, "in dest sect", self.dest, "before distribution was", dest_curr)
-      print("number of", self.item, "in dest sect", self.dest, "after distribution is", new_amount)
+      # print()
+      # print("number of", self.item, "in dest sect", self.dest, "before distribution was", dest_curr)
+      # print("number of", self.item, "in dest sect", self.dest, "after distribution is", new_amount)
       if ( new_amount > 9999 ):
         new_amount = 9999
         print("limit has been reached for", self.item, "in sector", self.dest + ".", "truncated at", new_amount)
@@ -239,22 +242,23 @@ class Move(Action):
       else:
         model['sectors'][self.source][self.item] = new_amount
         model['sectors'][self.source]['mobil'] = new_mob
-        print("number of", self.item, "before move from sector", self.source, "is", curr)
-        print("number of", self.item, "remaining in source sector", self.source, "is", new_amount)
-        print()
-        print("number of mob before move from source sector", self.source, "is", mob_sect)
-        print("number of mob remaining in source sector", self.source, "is", new_mob)
-        print()
+        # print("number of", self.item, "before move from sector", self.source, "is", curr)
+        # print("number of", self.item, "remaining in source sector", self.source, "is", new_amount)
+        # print()
+        # print("number of mob before move from source sector", self.source, "is", mob_sect)
+        # print("number of mob remaining in source sector", self.source, "is", new_mob)
+        # print()
         dest_curr = model['sectors'][self.dest][self.item]
         new_amount = dest_curr + self.number
-        print("number of", self.item, "in dest sect", self.dest, "before move was", dest_curr)
-        print("number of", self.item, "in dest sect", self.dest, "after move is", new_amount)
-        print()
+        # print("number of", self.item, "in dest sect", self.dest, "before move was", dest_curr)
+        # print("number of", self.item, "in dest sect", self.dest, "after move is", new_amount)
+        # print()
         if ( new_amount > 9999 ):
           new_amount = 9999
           print("limit has been reached for", self.item, "in sector", self.dest + ".", "truncated at", new_amount)
         model['sectors'][self.dest][self.item] = new_amount
-    
+        return("move " + self.item + " " + self.source + " " + str(self.number) + " " + self.dest)
+
 
 class Distribute(Action):
   def __init__(self,source,dest):
@@ -269,6 +273,7 @@ class Distribute(Action):
           x,y = self.coordToInt(self.dest)
           model['sectors'][self.source]['xdist'] = x
           model['sectors'][self.source]['ydist'] = y
+          return("distribute " + self.source + " " + self.dest)
         else:
           print("dest in not a harbor or a warehouse. dest is:", "'" + self.get_des_name_for_sect(model, self.dest) + "'", model['sectors'][self.dest]['des'], " harbor is 12, and warehouse is 13")
       else:
@@ -290,6 +295,7 @@ class Threshold(Action):
         if (self.thresh >= 0 and self.thresh < 9999):
           thresh = dist_item_dict[self.item]
           model['sectors'][self.sect][thresh] = int(self.thresh)
+          return("threshold " + self.item + " " + self.sect + " " + str(self.thresh))
         else:
           print("invalid value for thresh given:", self.thresh, "Value must be positive interger greater than or equal to 0 and less than 9999")
       else:
@@ -310,14 +316,13 @@ class Designate(Action):
     if self.des in self.getDesList():
       if model['sectors'][self.sect]['coastal'] == 0 and self.des == 'h':
         print("only coastal sects may be designated as harbors, sector given", self.sect)	
-        return -1 
       else:
         if model['sectors'][self.sect]['effic'] <= 5:
           model['sectors'][self.sect]['effic'] = 0
         model['sectors'][self.sect]['newdes'] = self.getDesDictSim()[self.des]
+        return("designate " + self.sect + " " + self.des)
     else:
       print("invalid designation given", self.des, "valid designations are:", self.getDesList())	
-      return -1
 
 
 class Build(Action):
@@ -346,6 +351,7 @@ class Build(Action):
                       model['sectors'][self.sect]['lcm'] = lcm - (ship_info[self.v_type]['lcm'] * self.quantity)
                       model['sectors'][self.sect]['hcm'] = hcm - (ship_info[self.v_type]['hcm'] * self.quantity)
                       model['sectors'][self.sect]['avail'] = avail - (ship_info[self.v_type]['avail'] * self.quantity)
+                      return("build " + self.kind + " " + self.sect + " " + self.v_type + " " + str(self.quantity))
                     else:
                       print("not enough money. cost of frigate is:", ship_info[self.v_type]['cost'] + ".", "Money in country:", model['country']['money'])
                   else:
@@ -378,6 +384,7 @@ class Capital(Action):
         x, y = self.coordToInt(self.sect)
         model['country']['xcap'] = x
         model['country']['ycap'] = y
+        return("capital " + self.sect)
       else:
         print("the sector", self.sect, "is already a capitol")
     else:

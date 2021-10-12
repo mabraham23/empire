@@ -22,15 +22,22 @@ class Model_Actions():
         continue
     return new_sort_dict
 
+  def print_actions(self, actions):
+    print(actions)
+
   def macro_designate(self, state):
     moves_list = []
-    search_strategy = ""
+    mineral_heavy_list = []
+    fert_heavy_list = []
+    # search_strategy = ""
     mineral_dict = {}
     fert_dict = {}
-    sector_list = []
+    min_sector_list = []
+    fert_sector_list = []
     for key in state.model['sectors']:
       # populate sector list
-      sector_list.append(key)
+      min_sector_list.append(key)
+      fert_sector_list.append(key)
       # populate mineral dict
       sect_mineral = state.model['sectors'][key]['min']
       mineral_dict[key] = sect_mineral
@@ -39,93 +46,97 @@ class Model_Actions():
       fert_dict[key] = sect_fert
     
     # determine which side is heavy
-    min_heavy = 0
-    fert_heavy = 0
-    for mineral in mineral_dict.values():
-      if mineral >  50:
-        min_heavy += 1
-    for fert in fert_dict.values():
-      if fert >  50:
-        fert_heavy += 1
-    if min_heavy > fert_heavy:
-      search_strategy = "mineral"
-    elif fert_heavy > min_heavy:
-      search_strategy = "fertility"
-    else:
-      search_strategy = "mineral"
+    # min_heavy = 0
+    # fert_heavy = 0
+    # for mineral in mineral_dict.values():
+    #   if mineral >  50:
+    #     min_heavy += 1
+    # for fert in fert_dict.values():
+    #   if fert >  50:
+    #     fert_heavy += 1
+    # if min_heavy > fert_heavy:
+    #   search_strategy = "mineral"
+    # elif fert_heavy > min_heavy:
+    #   search_strategy = "fertility"
+    # else:
+    #   search_strategy = "mineral"
 
     # execute mineral designate 
-    print("designate strategy: ", search_strategy)
-    if search_strategy == "mineral":
+    # print("designate strategy: ", search_strategy)
+    # if search_strategy == "mineral":
+
+    #mineral heavy
       # 10 total sectors
       # need 1 harbor, 1 capital, 1 lcm , 1 hcm rest mine or agric
       # 4 mines # 2 agric
-      for i in range(3):
-        model_item_dict = self.sort_model_by(state.model['sectors'], 'min', sector_list)
-        max_key = max(model_item_dict, key=model_item_dict.get)
-        sector_list.remove(max_key)
-        d = Designate(max_key, "m")
-        moves_list.append(d)
-      for i in range(1):
-        model_item_dict = self.sort_model_by(state.model['sectors'], 'fert', sector_list)
-        max_key = max(model_item_dict, key=model_item_dict.get)
-        sector_list.remove(max_key)
-        d = Designate(max_key, "a")
-        moves_list.append(d)
-      # set harbor
-      for sect in sector_list:
-        if state.model['sectors'][sect]['coastal'] == 1:
-          sector_list.remove(sect)
-          d = Designate(sect, "h")
-          moves_list.append(d)
-          break
-      a = Designate(sector_list[0], "j")
-      moves_list.append(a)
-      b = Designate(sector_list[1], "k")
-      moves_list.append(b)
-      c = Designate(sector_list[2], "c")
-      # d = Capital(sector_list[2])
-      moves_list.append(c)
-      # moves_list.append(d)
-      return moves_list
+    for i in range(3):
+      model_item_dict = self.sort_model_by(state.model['sectors'], 'min', min_sector_list)
+      max_key = max(model_item_dict, key=model_item_dict.get)
+      min_sector_list.remove(max_key)
+      d = Designate(max_key, "m")
+      mineral_heavy_list.append(d)
+    for i in range(1):
+      model_item_dict = self.sort_model_by(state.model['sectors'], 'fert', min_sector_list)
+      max_key = max(model_item_dict, key=model_item_dict.get)
+      min_sector_list.remove(max_key)
+      d = Designate(max_key, "a")
+      mineral_heavy_list.append(d)
+    # set harbor
+    for sect in min_sector_list:
+      if state.model['sectors'][sect]['coastal'] == 1:
+        min_sector_list.remove(sect)
+        d = Designate(sect, "h")
+        mineral_heavy_list.append(d)
+        break
+    a = Designate(min_sector_list[0], "j")
+    mineral_heavy_list.append(a)
+    b = Designate(min_sector_list[1], "k")
+    mineral_heavy_list.append(b)
+    c = Designate(min_sector_list[2], "c")
+    # d = Capital(sector_list[2])
+    mineral_heavy_list.append(c)
+    # moves_list.append(d)
+    # return moves_list
       
-    elif search_strategy == "fertility":
-      for i in range(3):
-        model_item_dict = self.sort_model_by(state.model['sectors'], 'fert', sector_list)
-        max_key = max(model_item_dict, key=model_item_dict.get)
-        sector_list.pop(max_key)
-        d = Designate(max_key, "a")
-        moves_list.append(d)
-      for i in range(1):
-        model_item_dict = self.sort_model_by(state.model['sectors'], 'iron', sector_list)
-        max_key = max(model_item_dict, key=model_item_dict.get)
-        sector_list.pop(max_key)
-        d = Designate(max_key, "m")
-        moves_list.append(d)
-      # set harbor
-      for sect in sector_list:
-        if state.model['sectors'][sect]['costal'] == 1:
-          sector_list.pop(sect)
-          d = Designate(sect, "h")
-          moves_list.append(d)
-          break
-      a = Designate(sector_list[0], "j")
-      moves_list.append(a)
-      b = Designate(sector_list[1], "k")
-      moves_list.append(b)
-      c = Designate(sector_list[2], "c")
-      # d = Capital(sector_list[2])
-      moves_list.append(c)
-      # moves_list.append(d)
-      return moves_list
+    # elif search_strategy == "fertility":
+    for i in range(3):
+      model_item_dict = self.sort_model_by(state.model['sectors'], 'fert', fert_sector_list)
+      max_key = max(model_item_dict, key=model_item_dict.get)
+      fert_sector_list.remove(str(max_key))
+      d = Designate(max_key, "a")
+      fert_heavy_list.append(d)
+    for i in range(1):
+      model_item_dict = self.sort_model_by(state.model['sectors'], 'iron', fert_sector_list)
+      max_key = max(model_item_dict, key=model_item_dict.get)
+      fert_sector_list.remove(max_key)
+      d = Designate(max_key, "m")
+      fert_heavy_list.append(d)
+    # set harbor
+    for sect in fert_sector_list:
+      if state.model['sectors'][sect]['coastal'] == 1:
+        fert_sector_list.remove(sect)
+        d = Designate(sect, "h")
+        fert_heavy_list.append(d)
+        break
+    a = Designate(fert_sector_list[0], "j")
+    fert_heavy_list.append(a)
+    b = Designate(fert_sector_list[1], "k")
+    fert_heavy_list.append(b)
+    c = Designate(fert_sector_list[2], "c")
+    # d = Capital(sector_list[2])
+    fert_heavy_list.append(c)
+    # moves_list.append(d)
 
-    else:
-      print("invalid designate strategy given")
+    moves_list.append(mineral_heavy_list)
+    moves_list.append(fert_heavy_list)
+    return moves_list
+
+    # else:
+    #   print("invalid designate strategy given")
 
 
   def macro_populate(self, state):
     moves_list = []
-    strategey = ""
     pop_dict = {}
     mine_pop = 0
     agr_pop = 0
@@ -219,7 +230,7 @@ class Model_Actions():
         m = Move("civil", big["sect"], sect["amount"], sect["dest"])
         moves_list.append(m)
 
-    return moves_list
+    return [moves_list]
 
 
 
@@ -247,9 +258,10 @@ class Model_Actions():
           t = Threshold('iron', key, 500)
           actions_list.append(t)
       else:
+        if state.model['sectors'][key]['i_dist'] > 0:
+          t = Threshold('iron', key, 0)
+          actions_list.append(t)
         # no sector should have a threshold for iron except lcm and hcm
-        t = Threshold('iron', key, 0)
-        actions_list.append(t)
 
       # set distribution center as harbor
       a = Action()
@@ -260,15 +272,17 @@ class Model_Actions():
         d = Distribute(key, dist_center)
         actions_list.append(d)
 
-    return actions_list
+    return [actions_list]
 
 
   def macro_update(self, state):
+    actions_list =[]
     u = Update()
-    model = u.update(state.model)
-    new_model = copy.deepcopy(model)
-    new_state = State(new_model, state, "none", "cost")
-    return new_state
+    actions_list.append(u)
+    # model = u.update(state.model)
+    # new_model = copy.deepcopy(model)
+    # new_state = State(new_model, state, "none", "cost")
+    return [actions_list]
 
   def build(self, state):
     harb = ""
@@ -278,11 +292,12 @@ class Model_Actions():
         harb = key
     b = Build("ship", harb, "fishing", 1)
     moves_list.append(b)
-    return moves_list
+    return [moves_list]
 
   # returns a list of actions
   def create_actions(self, state):
-    if (state.arriving_action == "update"):
+    arriving = state.arriving_action
+    if (state.arriving_action == "update" or state.arriving_action == "start"):
       return self.macro_designate(state), "designate"
     elif (state.arriving_action == "designate"):
       return self.macro_populate(state), "populate"
@@ -297,12 +312,21 @@ class Model_Actions():
       
   def result(self, state_1, actions_list, arriving_action):
     model_copy = copy.deepcopy(state_1.model)
+    primitives = []
     for action in actions_list:
-      action.run(model_copy)
-    state_2 = State(model_copy, state_1, arriving_action, self.step_cost(arriving_action, len(actions_list)))
+      if arriving_action != "update":
+        p = action.run(model_copy)
+        primitives.append(p)
+      else:
+        p = action.run(model_copy)
+        primitives.append("UPDATE")
+    state_2 = State(model_copy, state_1, primitives, arriving_action, self.step_cost(arriving_action, len(actions_list)))
     return state_2
 
   def goal(self, state):
+    print("GOAL CHECK:")
+    for key in state.model["sectors"]:
+      print(key, ":", state.model["sectors"][key]["civil"])
     max_pop = True
     for key in state.model["sectors"]:
       if state.model["sectors"][key]["civil"] != 1000:

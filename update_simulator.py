@@ -116,13 +116,21 @@ class Update():
     pass
 
   def population_growth(self, model):
-    pass
+    growth_rate = 2
+    for key in model["sectors"]:
+      civils = model["sectors"][key]["civil"]
+      civils += civils * growth_rate
+      if civils > 1000:
+        civils = 1000
+      model["sectors"][key]["civil"] = civils
+
 
   def refil_mobility(self, model):
     for key in model['sectors']:
       model["sectors"][key]["mobil"] = 127
       
-  def update(self, model):
+  def run(self, model):
+    print("does this runnnnnn????????????")
     #prepare stage
     # do_feed()
     #avail set
@@ -138,7 +146,7 @@ class Update():
     # distribute item from distribution center to outside sectors
     self.distribute_to_sectors(model)
     self.refil_mobility(model)
-    return model
+    self.population_growth(model)
         
 
 
