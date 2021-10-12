@@ -130,13 +130,13 @@ class Update():
     # produce_sect()
     # effic updated
     # change new_des to des
-    # self.update_new_sectors(model)
+    self.update_new_sectors(model)
     # calculate and set avail for each sector
-    # self.set_avail(model)
+    self.set_avail(model)
     # distribute items from outside sectors to distribution center
-    # self.send_to_distribution(model)
+    self.send_to_distribution(model)
     # distribute item from distribution center to outside sectors
-    # self.distribute_to_sectors(model)
+    self.distribute_to_sectors(model)
     self.refil_mobility(model)
     return model
         

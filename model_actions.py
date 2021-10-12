@@ -1,7 +1,8 @@
-from actions import Action, Capital, Designate, Distribute, Threshold, Move
+from abc import abstractproperty
+from actions import Action, Build, Capital, Designate, Distribute, Threshold, Move
 from model import createModel
 from state import State
-from update_simulator import Update
+from update_simulator import Update, print_country
 import copy
 
 
@@ -270,95 +271,64 @@ class Model_Actions():
     return new_state
 
   def build(self, state):
-    #decide when it's time to build 
-    pass
+    harb = ""
+    moves_list = []
+    for key in state.model["sectors"]:
+      if state.model["sectors"][key]["des"] == 12:
+        harb = key
+    b = Build("ship", harb, "fishing", 1)
+    moves_list.append(b)
+    return moves_list
 
+  # returns a list of actions
   def create_actions(self, state):
-    # moves_list = self.macro_designate(state)
-    # moves_list = self.macro_distribute(state)
-
-    # u = Update()
-    # print()
-    # print("first")
-    # u.show(state.model)
-    # print()
-
-    ml1 = self.macro_populate(state)
-    s2 = self.result(state, ml1)
-
-    s3 = self.macro_update(s2)
-
-    ml2 = self.macro_populate(s3)
-    s4 = self.result(s3, ml2)
-
-    s5 = self.macro_update(s4)
-
-    ml3 = self.macro_populate(s5)
-    s6 = self.result(s5, ml3)
-
-    s7 = self.macro_update(s6)
-
-    ml4 = self.macro_populate(s7)
-    s8 = self.result(s7, ml4)
-
-
-    u = Update()
-    print()
-    print("last")
-    u.show(s8.model)
-    print()
-
-    # if (state.arriving_action == "update"):
-    #   self.macro_designate(state)
-    # elif (state.arriving_action == "designate"):
-    #   self.macro_populate(state)
-    # elif (state.arriving_action == "populate"):
-    #   self.macro_distribute(state)
-    # elif (state.arriving_action == "distribute"):
-    #   self.build(state)
-    # elif (state.arriving_action == "build"):
-    #   self.macro_update(state)
-    # else:
-    #   print("invalid state action")
-
+    if (state.arriving_action == "update"):
+      return self.macro_designate(state), "designate"
+    elif (state.arriving_action == "designate"):
+      return self.macro_populate(state), "populate"
+    elif (state.arriving_action == "populate"):
+      return self.macro_distribute(state), "distribute"
+    elif (state.arriving_action == "distribute"):
+      return self.build(state), "build"
+    elif (state.arriving_action == "build"):
+      return self.macro_update(state), "update"
+    else:
+      print("invalid state action")
       
-
-  def result(self, state_1, actions_list):
-    # create state_2 based on running actions_list with new state
+  def result(self, state_1, actions_list, arriving_action):
     model_copy = copy.deepcopy(state_1.model)
     for action in actions_list:
       action.run(model_copy)
-    # u = Update()
-    # print()
-    # print("after running")
-    # u.show(model_copy)
-    # print()
-    state_2 = State(model_copy, state_1, "none", 0)
+    state_2 = State(model_copy, state_1, arriving_action, self.step_cost(arriving_action, len(actions_list)))
     return state_2
-    
 
-    # state_2 = state(model_copy, parent, arriving_action, path_cost)
+  def goal(self, state):
+    max_pop = True
+    for key in state.model["sectors"]:
+      if state.model["sectors"][key]["civil"] != 1000:
+        max_pop = False
+        break
+    if len(state.model["ships"]) >= 1 and max_pop:
+      return True
+    return False
 
-  def goal(state):
-    # check if goal has been reached
-    pass
+  def step_cost(self, arriving_action, primitive_commands):
+    if arriving_action == "update":
+      return 1
+    else:
+      return 0.01 * primitive_commands
 
-  def step_cost(state_1, a, state_2):
-    # update = cost of 1.0
-    # else 0.01 * number of prmitive commands in action
-    pass 
+# def run():
+#   m = Model_Actions()
+#   model = createModel()
+#   # d = Designate('(1, -1)', 'm')
+#   # d.run(model)
+#   # d = Designate('(-1, -3)', 'h')
+#   # d.run(model)
+#   # u = Update()
+#   # u.update(model)
+#   s = State(model, 0, "update", 0)
+#   m.create_actions(s)
 
-def run():
-  m = Model_Actions()
-  model = createModel()
-  # d = Designate('(1, -1)', 'm')
-  # d.run(model)
-  # d = Designate('(-1, -3)', 'h')
-  # d.run(model)
-  # u = Update()
-  # u.update(model)
-  s = State(model, 0, "update", 0)
-  m.create_actions(s)
-
-run()
+# run()
     
