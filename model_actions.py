@@ -44,91 +44,89 @@ class Model_Actions():
       # populate fert dict
       sect_fert = state.model['sectors'][key]['fert']
       fert_dict[key] = sect_fert
-    
-    # determine which side is heavy
-    # min_heavy = 0
-    # fert_heavy = 0
-    # for mineral in mineral_dict.values():
-    #   if mineral >  50:
-    #     min_heavy += 1
-    # for fert in fert_dict.values():
-    #   if fert >  50:
-    #     fert_heavy += 1
-    # if min_heavy > fert_heavy:
-    #   search_strategy = "mineral"
-    # elif fert_heavy > min_heavy:
-    #   search_strategy = "fertility"
-    # else:
-    #   search_strategy = "mineral"
 
-    # execute mineral designate 
-    # print("designate strategy: ", search_strategy)
-    # if search_strategy == "mineral":
-
-    #mineral heavy
-      # 10 total sectors
-      # need 1 harbor, 1 capital, 1 lcm , 1 hcm rest mine or agric
-      # 4 mines # 2 agric
-    for i in range(3):
+    # mining heavy designate
+    # keep 0,0 as the capital
+    min_sector_list.remove('(0, 0)')
+    for i in range(4):
       model_item_dict = self.sort_model_by(state.model['sectors'], 'min', min_sector_list)
       max_key = max(model_item_dict, key=model_item_dict.get)
       min_sector_list.remove(max_key)
-      d = Designate(max_key, "m")
-      mineral_heavy_list.append(d)
-    for i in range(1):
+      if state.model["sectors"][max_key]["des"] != 10:
+        d = Designate(max_key, "m")
+        mineral_heavy_list.append(d)
+    for i in range(2):
       model_item_dict = self.sort_model_by(state.model['sectors'], 'fert', min_sector_list)
       max_key = max(model_item_dict, key=model_item_dict.get)
       min_sector_list.remove(max_key)
-      d = Designate(max_key, "a")
-      mineral_heavy_list.append(d)
+      if state.model["sectors"][max_key]["des"] != 15:
+        d = Designate(max_key, "a")
+        mineral_heavy_list.append(d)
     # set harbor
     for sect in min_sector_list:
       if state.model['sectors'][sect]['coastal'] == 1:
         min_sector_list.remove(sect)
-        d = Designate(sect, "h")
-        mineral_heavy_list.append(d)
+        if state.model["sectors"][sect]["des"] != 12:
+          d = Designate(sect, "h")
+          mineral_heavy_list.append(d)
         break
-    a = Designate(min_sector_list[0], "j")
-    mineral_heavy_list.append(a)
-    b = Designate(min_sector_list[1], "k")
-    mineral_heavy_list.append(b)
-    c = Designate(min_sector_list[2], "c")
+    if state.model["sectors"][min_sector_list[0]]["des"] != 17:
+      a = Designate(min_sector_list[0], "j")
+      mineral_heavy_list.append(a)
+    if state.model["sectors"][min_sector_list[1]]["des"] != 18:
+      b = Designate(min_sector_list[1], "k")
+      mineral_heavy_list.append(b)
+    # if state.model["sectors"][min_sector_list[2]]["des"] != 5:
+    #   c = Designate(min_sector_list[2], "c")
+    #   mineral_heavy_list.append(c)
+    #   d = Capital(min_sector_list[2])
+    #   mineral_heavy_list.append(d)
     # d = Capital(sector_list[2])
-    mineral_heavy_list.append(c)
     # moves_list.append(d)
     # return moves_list
       
     # elif search_strategy == "fertility":
-    for i in range(3):
+    #fertility heavy strategy
+    # keep 0,0 as the capital
+    fert_sector_list.remove('(0, 0)')
+    for i in range(4):
       model_item_dict = self.sort_model_by(state.model['sectors'], 'fert', fert_sector_list)
       max_key = max(model_item_dict, key=model_item_dict.get)
-      fert_sector_list.remove(str(max_key))
-      d = Designate(max_key, "a")
-      fert_heavy_list.append(d)
-    for i in range(1):
+      fert_sector_list.remove(max_key)
+      if state.model["sectors"][max_key]["des"] != 15:
+        d = Designate(max_key, "a")
+        fert_heavy_list.append(d)
+    for i in range(2):
       model_item_dict = self.sort_model_by(state.model['sectors'], 'iron', fert_sector_list)
       max_key = max(model_item_dict, key=model_item_dict.get)
       fert_sector_list.remove(max_key)
-      d = Designate(max_key, "m")
-      fert_heavy_list.append(d)
+      if state.model["sectors"][max_key]["des"] != 10:
+        d = Designate(max_key, "m")
+        fert_heavy_list.append(d)
     # set harbor
     for sect in fert_sector_list:
       if state.model['sectors'][sect]['coastal'] == 1:
         fert_sector_list.remove(sect)
-        d = Designate(sect, "h")
-        fert_heavy_list.append(d)
+        if state.model["sectors"][sect]["des"] != 12:
+          d = Designate(sect, "h")
+          fert_heavy_list.append(d)
         break
-    a = Designate(fert_sector_list[0], "j")
-    fert_heavy_list.append(a)
-    b = Designate(fert_sector_list[1], "k")
-    fert_heavy_list.append(b)
-    c = Designate(fert_sector_list[2], "c")
-    # d = Capital(sector_list[2])
-    fert_heavy_list.append(c)
-    # moves_list.append(d)
+    if state.model["sectors"][fert_sector_list[0]]["des"] != 17:
+      a = Designate(fert_sector_list[0], "j")
+      fert_heavy_list.append(a)
+    if state.model["sectors"][fert_sector_list[1]]["des"] != 18:
+      b = Designate(fert_sector_list[1], "k")
+      fert_heavy_list.append(b)
+    # if state.model["sectors"][fert_sector_list[2]]["des"] != 5:
+    #   c = Designate(fert_sector_list[2], "c")
+    #   # d = Capital(sector_list[2])
+    #   fert_heavy_list.append(c)
+    #   d = Capital(fert_sector_list[2])
+    #   fert_heavy_list.append(d)
+      # moves_list.append(d)
 
-    moves_list.append(mineral_heavy_list)
     moves_list.append(fert_heavy_list)
+    moves_list.append(mineral_heavy_list)
     return moves_list
 
     # else:
@@ -257,10 +255,23 @@ class Model_Actions():
         if state.model['sectors'][key]['i_dist'] < 500: 
           t = Threshold('iron', key, 500)
           actions_list.append(t)
-      else:
-        if state.model['sectors'][key]['i_dist'] > 0:
-          t = Threshold('iron', key, 0)
+        if state.model['sectors'][key]['des'] == 17:
+          if state.model['sectors'][key]['l_dist'] != 1: 
+            t = Threshold('lcm', key, 1)
+            actions_list.append(t)
+        if state.model['sectors'][key]['des'] == 18:
+          if state.model['sectors'][key]['h_dist'] != 1: 
+            t = Threshold('hcm', key, 1)
+            actions_list.append(t)
+
+      #mines
+      if state.model['sectors'][key]['des'] == 10:
+        if state.model['sectors'][key]['i_dist'] != 1:
+          t = Threshold('iron', key, 1)
           actions_list.append(t)
+
+
+
         # no sector should have a threshold for iron except lcm and hcm
 
       # set distribution center as harbor
@@ -316,23 +327,37 @@ class Model_Actions():
     for action in actions_list:
       if arriving_action != "update":
         p = action.run(model_copy)
-        primitives.append(p)
+        if p != None:
+          primitives.append(p)
       else:
         p = action.run(model_copy)
         primitives.append("UPDATE")
+    
     state_2 = State(model_copy, state_1, primitives, arriving_action, self.step_cost(arriving_action, len(actions_list)))
     return state_2
 
   def goal(self, state):
-    print("GOAL CHECK:")
-    for key in state.model["sectors"]:
-      print(key, ":", state.model["sectors"][key]["civil"])
+    # print("GOAL CHECK:")
+    # for key in state.model["sectors"]:
+    #   if state.model["sectors"][key]["des"] == 10:
+    #     print("mine", key, ":", "iron:", state.model["sectors"][key]["iron"])
+    #   if state.model["sectors"][key]["des"] == 12:
+    #     print("harbor", key, ":", "lcm", state.model["sectors"][key]["lcm"])
+    #     print("harbor", key, ":", "hcm", state.model["sectors"][key]["hcm"])
+    #     print("harbor", key, ":", "iron", state.model["sectors"][key]["iron"])
+    #   if state.model["sectors"][key]["des"] == 17:
+    #     print("lcm", key, ":", "iron:", state.model["sectors"][key]["iron"])
+    #     print("lcm", key, ":", "lcm:", state.model["sectors"][key]["lcm"])
+    #   if state.model["sectors"][key]["des"] == 18:
+    #     print("hcm", key, ":", "iron", state.model["sectors"][key]["iron"])
+    #     print("hcm", key, ":", "hcm:", state.model["sectors"][key]["hcm"])
+
     max_pop = True
     for key in state.model["sectors"]:
       if state.model["sectors"][key]["civil"] != 1000:
         max_pop = False
         break
-    if len(state.model["ships"]) >= 1 and max_pop:
+    if state.model["ships"]["fishing"] >= 1 and max_pop:
       return True
     return False
 

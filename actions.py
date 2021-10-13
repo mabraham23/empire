@@ -145,7 +145,7 @@ class DistMove(Action):
   def run(self, model):
     curr = model['sectors'][self.source][self.item]
     mcost = (self.calculatePathCost(model['sectors'], self.source, self.dest) / 10 * self.getWeight(self.item) / 10)
-    print("mcost", mcost)
+    # print("mcost", mcost)
     mob_sect = model['sectors'][self.source]['mobil']
     if mcost > mob_sect:
       print("Cannot do distribute move. Not enough mobility. Mobility Cost:", mcost, "Mobility for sector", self.source + ": ", mob_sect)
@@ -153,8 +153,9 @@ class DistMove(Action):
     new_mob = round(mob_sect - mcost)
     new_amount = curr - self.number
     if ( new_amount < 0 ):
-      print("\nCannot move more", self.item, "than you have available. Only", curr, self.item, "remain in sector", self.source, "\n")
-      return -1
+      return
+      # print("\nCannot move more", self.item, "than you have available. Only", curr, self.item, "are available in sector", self.source, "\n")
+      # return -1
     else:
       model['sectors'][self.source][self.item] = new_amount
       model['sectors'][self.source]['mobil'] = new_mob
@@ -257,7 +258,7 @@ class Move(Action):
           new_amount = 9999
           print("limit has been reached for", self.item, "in sector", self.dest + ".", "truncated at", new_amount)
         model['sectors'][self.dest][self.item] = new_amount
-        return("move " + self.item + " " + self.source + " " + str(self.number) + " " + self.dest)
+        return("move " + self.item + " " + self.source[1:-1].replace(" ", "") + " " + str(self.number) + " " + self.dest[1:-1].replace(" ", ""))
 
 
 class Distribute(Action):
@@ -273,7 +274,7 @@ class Distribute(Action):
           x,y = self.coordToInt(self.dest)
           model['sectors'][self.source]['xdist'] = x
           model['sectors'][self.source]['ydist'] = y
-          return("distribute " + self.source + " " + self.dest)
+          return("distribute " + self.source[1:-1].replace(" ", "") + " " + self.dest[1:-1].replace(" ", ""))
         else:
           print("dest in not a harbor or a warehouse. dest is:", "'" + self.get_des_name_for_sect(model, self.dest) + "'", model['sectors'][self.dest]['des'], " harbor is 12, and warehouse is 13")
       else:
@@ -295,7 +296,7 @@ class Threshold(Action):
         if (self.thresh >= 0 and self.thresh < 9999):
           thresh = dist_item_dict[self.item]
           model['sectors'][self.sect][thresh] = int(self.thresh)
-          return("threshold " + self.item + " " + self.sect + " " + str(self.thresh))
+          return("threshold " + self.item + " " + self.sect[1:-1].replace(" ", "") + " " + str(self.thresh))
         else:
           print("invalid value for thresh given:", self.thresh, "Value must be positive interger greater than or equal to 0 and less than 9999")
       else:
@@ -317,10 +318,13 @@ class Designate(Action):
       if model['sectors'][self.sect]['coastal'] == 0 and self.des == 'h':
         print("only coastal sects may be designated as harbors, sector given", self.sect)	
       else:
-        if model['sectors'][self.sect]['effic'] <= 5:
-          model['sectors'][self.sect]['effic'] = 0
-        model['sectors'][self.sect]['newdes'] = self.getDesDictSim()[self.des]
-        return("designate " + self.sect + " " + self.des)
+        if model['sectors'][self.sect]['des'] == 4 or model['sectors'][self.sect]['des'] == 5:
+          # print(self.getDesDictSim()[self.des])
+          model['sectors'][self.sect]['des'] = self.getDesDictSim()[self.des]
+          model['sectors'][self.sect]['newdes'] = self.getDesDictSim()[self.des]
+        else:
+          model['sectors'][self.sect]['newdes'] = self.getDesDictSim()[self.des]
+        return("designate " + self.sect[1:-1].replace(" ", "") + " " + self.des)
     else:
       print("invalid designation given", self.des, "valid designations are:", self.getDesList())	
 
@@ -351,7 +355,8 @@ class Build(Action):
                       model['sectors'][self.sect]['lcm'] = lcm - (ship_info[self.v_type]['lcm'] * self.quantity)
                       model['sectors'][self.sect]['hcm'] = hcm - (ship_info[self.v_type]['hcm'] * self.quantity)
                       model['sectors'][self.sect]['avail'] = avail - (ship_info[self.v_type]['avail'] * self.quantity)
-                      return("build " + self.kind + " " + self.sect + " " + self.v_type + " " + str(self.quantity))
+                      model['ships']["fishing"] += self.quantity
+                      return("build " + self.kind + " " + self.sect[1:-1].replace(" ","") + " " + self.v_type + " " + str(self.quantity))
                     else:
                       print("not enough money. cost of frigate is:", ship_info[self.v_type]['cost'] + ".", "Money in country:", model['country']['money'])
                   else:
@@ -384,7 +389,7 @@ class Capital(Action):
         x, y = self.coordToInt(self.sect)
         model['country']['xcap'] = x
         model['country']['ycap'] = y
-        return("capital " + self.sect)
+        return("capital " + self.sect[1:-1].replace(" ", ""))
       else:
         print("the sector", self.sect, "is already a capitol")
     else:

@@ -55,6 +55,7 @@ class Update():
   def update_new_sectors(self, model):
     for key in model['sectors']:
       if ( model['sectors'][key]['newdes'] != model['sectors'][key]['des'] ):
+        # print(model['sectors'][key]['newdes'])
         model['sectors'][key]['des'] = model['sectors'][key]['newdes']
 
   def set_avail(self, model):
@@ -73,8 +74,9 @@ class Update():
             # add new items to distribution center 
             dist_sect = self.get_dist_center_of_sector(model['sectors'][key])
             surplus = sect_item_amount - item_thresh
-            m = DistMove(t_item, key, surplus, dist_sect)
-            m.run(model)
+            if surplus > 0:
+              m = DistMove(t_item, key, surplus, dist_sect)
+              m.run(model)
 
   def distribute_to_sectors(self, model):
     for key in model['sectors']:
@@ -86,8 +88,9 @@ class Update():
           if sect_item_amount < item_thresh:
             dist_sect = self.get_dist_center_of_sector(model['sectors'][key])
             difference = item_thresh - sect_item_amount
-            m = DistMove(t_item, dist_sect, difference, key)
-            m.run(model)
+            if difference > 0:
+              m = DistMove(t_item, dist_sect, difference, key)
+              m.run(model)
 
   def sector_effic(self, model):
     pass
@@ -107,7 +110,31 @@ class Update():
         
 
   def produce_manufactured_goods(self, model):
-    pass
+    for key in model['sectors']:
+      #food
+      if model["sectors"][key]["des"] == 15:
+        food = model["sectors"][key]["food"]
+        food += 100
+        model["sectors"][key]["food"] = food
+      #mines
+      if model["sectors"][key]["des"] == 10:
+        iron = model["sectors"][key]["iron"]
+        iron += 300
+        model["sectors"][key]["iron"] = int(iron)
+      # lcm
+      if model["sectors"][key]["des"] == 17:
+        iron = model["sectors"][key]["iron"]
+        lcm = iron * 0.4
+        model["sectors"][key]["lcm"] = int(lcm)
+        model["sectors"][key]["iron"] = 0
+      # hcm
+      if model["sectors"][key]["des"] == 18:
+        iron = model["sectors"][key]["iron"]
+        hcm = iron * 0.3
+        model["sectors"][key]["hcm"] = int(hcm)
+        model["sectors"][key]["iron"] = 0
+        
+
 
   def ship_effic(self, model):
     pass
@@ -130,7 +157,6 @@ class Update():
       model["sectors"][key]["mobil"] = 127
       
   def run(self, model):
-    print("does this runnnnnn????????????")
     #prepare stage
     # do_feed()
     #avail set
@@ -141,6 +167,8 @@ class Update():
     self.update_new_sectors(model)
     # calculate and set avail for each sector
     self.set_avail(model)
+
+    self.produce_manufactured_goods(model)
     # distribute items from outside sectors to distribution center
     self.send_to_distribution(model)
     # distribute item from distribution center to outside sectors
@@ -160,54 +188,3 @@ def print_country(model):
   print()
   print(model['country'])
   print()
-
-# def runCommands():
-#   model = createModel()
-#   u = Update()
-  # u.show(model)
-  # M = Move('food', '(2, 0)', 300, '(0, 0)')
-  # M.move(model)
-
-
-  # u = Update()
-  # u.update(model)
-  # print_sector(model, '(-1, -3)')
-  # print_sector(model, '(0, 2)')
-  # M = Move('food', '(-1, -3)', 100, '(0, 2)')
-  # M.dist_move(model)
-  # print_country(model)
-  # B = Build('ship', '(1, -1)', 'fishing', 1)
-  # B.build(model)
-  # print_country(model)
-  # t = Threshold('dust', '(-1, -3)', 500)
-  # t.threshold(model)
-  # print_sector(model, '(-1, -3)')
-  # print_sector(model, '(0, 2)')
-  # d = Designate('(1, 1)', 'h')
-  # d.designate(model)
-  # u = Update()
-  # u.update(model)
-  # print_sector(model, '(-1, -3)')
-  # d = Distribute('(-1, -3)', '(1, 1)')
-  # d.distribute(model)
-  # print_sector(model, '(-1, -3)')
-  # a = Action()
-  # print_sector(model, '(-1, -3)')
-  # d = Designate('(-1, -3)', 'c')
-  # d.designate(model)
-  # print_sector(model, '(-1, -3)')
-  # u = Update()
-  # u.update(model)
-  # print_sector(model, '(-1, -3)')
-  # print_country(model)
-  # c = Capital('(-1, -3)')
-  # c.capital(model)
-  # print_country(model)
-
-
-# need to update mobility cost when distributing
-# need to find where ship is shown
-
-
-
-# runCommands()

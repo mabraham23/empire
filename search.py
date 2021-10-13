@@ -16,8 +16,8 @@ def search(initial_state):
       print("stop here")
     for a in actions:
       new_state = m.result(s, a, arriving_action)
-      for p in new_state.primitives:
-        print(p)
+      # for p in new_state.primitives:
+        # print(p)
       Q.append(new_state)
   return
 
@@ -26,9 +26,23 @@ def find_goal_state():
   initial_model = createModel()
   initial_state = State(initial_model, None, [], "start", 0)
   g = search(initial_state)
+  instructions = []
+  print()
+  print()
+  print("COMMANDS START HERE:")
+  print()
+  print()
   while g.parent_state != None:
-    for a in g.primitives:
-      print(a)
+    for a in g.primitives[::-1]:
+      instructions.insert(0, a)
+      # print(a)
     g = g.parent_state
+  for inst in instructions:
+    if inst == "UPDATE":
+      print()
+      print(inst)
+      print()
+    else:
+      print(inst)
 
 find_goal_state()

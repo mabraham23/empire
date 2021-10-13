@@ -5,19 +5,19 @@ import os
 import pickle
 import copy
 
-if os.path.exists("data/country.p"):
-	fin = open("data/country.p", "rb")
-	country = pickle.load(fin)
-	fin.close()
-else:
-  country = {}
+# if os.path.exists("data/country.p"):
+# 	fin = open("data/country.p", "rb")
+# 	country = pickle.load(fin)
+# 	fin.close()
+# else:
+country = {}
 
 if os.path.exists("data/country-info.p"):
 	fin = open("data/country-info.p", "rb")
 	countryinfo= pickle.load(fin)
 	fin.close()
 else:
-  countryinfo = {}
+	countryinfo = {}
 
 for line in sys.stdin.readlines():
 	line = line.strip()

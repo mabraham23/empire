@@ -5,12 +5,12 @@ import os
 import pickle
 import copy
 
-if os.path.exists("data/sectors.p"):
-	fin = open("data/sectors.p", "rb")
-	sectors = pickle.load(fin)
-	fin.close()
-else:
-	sectors = {}
+# if os.path.exists("data/sectors.p"):
+# 	fin = open("data/sectors.p", "rb")
+# 	sectors = pickle.load(fin)
+# 	fin.close()
+# else:
+sectors = {}
 
 if os.path.exists("data/sector-info.p"):
 	fin = open("data/sector-info.p", "rb")
