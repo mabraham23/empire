@@ -29,7 +29,7 @@ class Model_Actions():
     moves_list = []
     mineral_heavy_list = []
     fert_heavy_list = []
-    # search_strategy = ""
+
     mineral_dict = {}
     fert_dict = {}
     min_sector_list = []
@@ -76,18 +76,7 @@ class Model_Actions():
     if state.model["sectors"][min_sector_list[1]]["des"] != 18:
       b = Designate(min_sector_list[1], "k")
       mineral_heavy_list.append(b)
-    # if state.model["sectors"][min_sector_list[2]]["des"] != 5:
-    #   c = Designate(min_sector_list[2], "c")
-    #   mineral_heavy_list.append(c)
-    #   d = Capital(min_sector_list[2])
-    #   mineral_heavy_list.append(d)
-    # d = Capital(sector_list[2])
-    # moves_list.append(d)
-    # return moves_list
-      
-    # elif search_strategy == "fertility":
-    #fertility heavy strategy
-    # keep 0,0 as the capital
+
     fert_sector_list.remove('(0, 0)')
     for i in range(4):
       model_item_dict = self.sort_model_by(state.model['sectors'], 'fert', fert_sector_list)
@@ -117,20 +106,10 @@ class Model_Actions():
     if state.model["sectors"][fert_sector_list[1]]["des"] != 18:
       b = Designate(fert_sector_list[1], "k")
       fert_heavy_list.append(b)
-    # if state.model["sectors"][fert_sector_list[2]]["des"] != 5:
-    #   c = Designate(fert_sector_list[2], "c")
-    #   # d = Capital(sector_list[2])
-    #   fert_heavy_list.append(c)
-    #   d = Capital(fert_sector_list[2])
-    #   fert_heavy_list.append(d)
-      # moves_list.append(d)
 
     moves_list.append(fert_heavy_list)
     moves_list.append(mineral_heavy_list)
     return moves_list
-
-    # else:
-    #   print("invalid designate strategy given")
 
 
   def macro_populate(self, state):
@@ -203,23 +182,6 @@ class Model_Actions():
         under_item["civil"] = state.model['sectors'][key]['civil']
         under.append(under_item)
 
-    # for big in over:
-    #   for small in under:
-    #     if (big["mobil"] <= 0):
-    #       continue
-    #     m = Move()
-    #     max_amount, max_mobil = m.calc_max_move(state.model, big["sect"], small["sect"], "civil")
-    #     if max_amount > 0:
-    #       if (small["civil"] + max_amount) >= even_pop:
-    #         continue
-    #       else:
-    #         small["civil"] += max_amount
-    #         big["mobil"] -= max_mobil
-    #         big["civil"] -= max_amount
-    #         m = Move("civil", big["sect"], max_amount, small["sect"])
-    #         moves_list.append(m)
-    #     else: 
-    #       continue
       
     for big in over:
       m = Move()
@@ -232,15 +194,12 @@ class Model_Actions():
 
 
 
-    
-
-
   def macro_distribute(self, state):
     actions_list = []
     # find distribution center
     dist_center = ""
     for key in state.model['sectors']:
-      if state.model['sectors'][key]["des"] in [12, 13]:
+      if state.model['sectors'][key]["newdes"] in [12, 13]:
         dist_center = key
     for key in state.model['sectors']:
       pop = state.model['sectors'][key]['civil']
@@ -251,30 +210,27 @@ class Model_Actions():
           t = Threshold('food', key, opt_thresh)
           actions_list.append(t)
       # lcm and hcm
-      if state.model['sectors'][key]['des'] == 17 or state.model['sectors'][key]['des'] == 18:
+      if state.model['sectors'][key]['newdes'] == 17 or state.model['sectors'][key]['newdes'] == 18:
         if state.model['sectors'][key]['i_dist'] < 500: 
           t = Threshold('iron', key, 500)
           actions_list.append(t)
-        if state.model['sectors'][key]['des'] == 17:
+        if state.model['sectors'][key]['newdes'] == 17:
           if state.model['sectors'][key]['l_dist'] != 1: 
             t = Threshold('lcm', key, 1)
             actions_list.append(t)
-        if state.model['sectors'][key]['des'] == 18:
+        if state.model['sectors'][key]['newdes'] == 18:
           if state.model['sectors'][key]['h_dist'] != 1: 
             t = Threshold('hcm', key, 1)
             actions_list.append(t)
 
       #mines
-      if state.model['sectors'][key]['des'] == 10:
+      if state.model['sectors'][key]['newdes'] == 10:
         if state.model['sectors'][key]['i_dist'] != 1:
           t = Threshold('iron', key, 1)
           actions_list.append(t)
 
 
 
-        # no sector should have a threshold for iron except lcm and hcm
-
-      # set distribution center as harbor
       a = Action()
       x = state.model['sectors'][key]['xdist']
       y = state.model['sectors'][key]['ydist']
@@ -290,20 +246,20 @@ class Model_Actions():
     actions_list =[]
     u = Update()
     actions_list.append(u)
-    # model = u.update(state.model)
-    # new_model = copy.deepcopy(model)
-    # new_state = State(new_model, state, "none", "cost")
     return [actions_list]
 
   def build(self, state):
-    harb = ""
-    moves_list = []
-    for key in state.model["sectors"]:
-      if state.model["sectors"][key]["des"] == 12:
-        harb = key
-    b = Build("ship", harb, "fishing", 1)
-    moves_list.append(b)
-    return [moves_list]
+    if state.model['ships']['fishing'] < 1:
+      harb = ""
+      moves_list = []
+      for key in state.model["sectors"]:
+        if state.model["sectors"][key]["des"] == 12:
+          harb = key
+      b = Build("ship", harb, "fishing", 1)
+      moves_list.append(b)
+      return [moves_list]
+    else:
+      return [[]]
 
   # returns a list of actions
   def create_actions(self, state):
@@ -337,24 +293,9 @@ class Model_Actions():
     return state_2
 
   def goal(self, state):
-    # print("GOAL CHECK:")
-    # for key in state.model["sectors"]:
-    #   if state.model["sectors"][key]["des"] == 10:
-    #     print("mine", key, ":", "iron:", state.model["sectors"][key]["iron"])
-    #   if state.model["sectors"][key]["des"] == 12:
-    #     print("harbor", key, ":", "lcm", state.model["sectors"][key]["lcm"])
-    #     print("harbor", key, ":", "hcm", state.model["sectors"][key]["hcm"])
-    #     print("harbor", key, ":", "iron", state.model["sectors"][key]["iron"])
-    #   if state.model["sectors"][key]["des"] == 17:
-    #     print("lcm", key, ":", "iron:", state.model["sectors"][key]["iron"])
-    #     print("lcm", key, ":", "lcm:", state.model["sectors"][key]["lcm"])
-    #   if state.model["sectors"][key]["des"] == 18:
-    #     print("hcm", key, ":", "iron", state.model["sectors"][key]["iron"])
-    #     print("hcm", key, ":", "hcm:", state.model["sectors"][key]["hcm"])
-
     max_pop = True
     for key in state.model["sectors"]:
-      if state.model["sectors"][key]["civil"] != 1000:
+      if state.model["sectors"][key]["civil"] < 1000:
         max_pop = False
         break
     if state.model["ships"]["fishing"] >= 1 and max_pop:
@@ -367,17 +308,4 @@ class Model_Actions():
     else:
       return 0.01 * primitive_commands
 
-# def run():
-#   m = Model_Actions()
-#   model = createModel()
-#   # d = Designate('(1, -1)', 'm')
-#   # d.run(model)
-#   # d = Designate('(-1, -3)', 'h')
-#   # d.run(model)
-#   # u = Update()
-#   # u.update(model)
-#   s = State(model, 0, "update", 0)
-#   m.create_actions(s)
-
-# run()
     

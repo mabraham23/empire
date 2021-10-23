@@ -270,7 +270,7 @@ class Distribute(Action):
   def run(self, model):
     if self.source in model['sectors']:
       if self.dest in model['sectors']:
-        if model['sectors'][self.dest]['des'] in [12, 13]:
+        if model['sectors'][self.dest]['newdes'] in [12, 13]:
           x,y = self.coordToInt(self.dest)
           model['sectors'][self.source]['xdist'] = x
           model['sectors'][self.source]['ydist'] = y
@@ -356,9 +356,9 @@ class Build(Action):
                       model['sectors'][self.sect]['hcm'] = hcm - (ship_info[self.v_type]['hcm'] * self.quantity)
                       model['sectors'][self.sect]['avail'] = avail - (ship_info[self.v_type]['avail'] * self.quantity)
                       model['ships']["fishing"] += self.quantity
-                      return("build " + self.kind + " " + self.sect[1:-1].replace(" ","") + " " + self.v_type + " " + str(self.quantity))
+                      return("build " + self.kind + " " + self.sect[1:-1].replace(" ","") + " " + "fb" + " " + str(self.quantity))
                     else:
-                      print("not enough money. cost of frigate is:", ship_info[self.v_type]['cost'] + ".", "Money in country:", model['country']['money'])
+                      print("not enough money. cost of frigate is:", str(ship_info[self.v_type]['cost']) + ".", "Money in country:", str(model['country']['money']))
                   else:
                     print("not enough avail in sector", self.sect, "amount:", model['sectors'][self.sect]['avail'], "amount required: ", ship_info[self.v_type]['avail'] * self.quantity)
                 else:

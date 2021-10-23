@@ -44,18 +44,18 @@ for line in sys.stdin.readlines():
 			ship[uid] = copy_ship_info 
 
 if doc_type == "ship":				
-	for key in ship:
-		print()
-		print(key)
-		print(ship[key])
-		print()
+	# for key in ship:
+	# 	print()
+	# 	print(key)
+	# 	print(ship[key])
+	# 	print()
 
 	fout = open("data/ship.p", "wb")
 	pickle.dump(ship, fout)
 	fout.close()
 
 elif doc_type == "meta-sect":				
-	print(shipinfo)
+	# print(shipinfo)
 	fout = open("data/ship-info.p", "wb")
 	pickle.dump(shipinfo, fout)
 	fout.close()

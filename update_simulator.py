@@ -45,6 +45,28 @@ class Update():
     avail = round((civ * sctwork / 100.0 + milit / 2.5 + uw) * etu / 100.0)
     return avail
 
+  
+  def avail_setter(sector):
+    avail = sector["avail"]
+    avail = avail / (2 * 100)
+    if sector["newdes"] != sector["des"]:
+      build = 4 * avail / 100
+      if build < sector["effic"]:
+        sector["effic"] -= build
+      else:
+        build = sector["effic"]
+        sector["effic"] = 0
+        sector["des"] = sector["newdes"]
+      avail -= build / 4 * 100
+    if sector["newdes"] == sector["des"]:
+      delta = avail / 100
+      build = min(delta, 100 - sector["effic"])
+      sector["effic"] += build
+      avail -= build * 100
+
+    sector["avail"] = (sector["avail"] / 2 + avail / 100)
+
+
   def get_dist_center_of_sector(self, sector):
     x = sector['xdist']
     y = sector['ydist']
@@ -158,15 +180,11 @@ class Update():
       
   def run(self, model):
     #prepare stage
-    # do_feed()
-    #avail set
-    #production stage
-    # produce_sect()
-    # effic updated
-    # change new_des to des
     self.update_new_sectors(model)
-    # calculate and set avail for each sector
     self.set_avail(model)
+
+    #production stage
+    # self.update_efficiency()
 
     self.produce_manufactured_goods(model)
     # distribute items from outside sectors to distribution center
