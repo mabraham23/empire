@@ -1,26 +1,17 @@
 # empireagent-mabraham23
 empireagent-mabraham23 created by GitHub Classroom
 
-before running:
+Before running:
 
-1. find an island
+1. Find an island on the Empire Server
+2. Break sanctuary with 'break' command
+3. Make sure 'empire' command is in your path
+4. Change the env variables 'EMPIREHOST', 'COUNTRY' and 'PLAYER' in main.bash to match the server, island and password you selected
 
-2. break sanctuary
 
-3. explore all sectors with 10 or fewer civils
+To Run:
 
-4. if you're feeling generous move 10 food to each explored sector from either 0,0 or 2,0
+1. run './main.bash' and wait for the exit status code to return ( typically takes between 7 - 10 updates for process to complete )
+2. login to your island and make sure that all sectors have population of 1000 and 1 fishing boat has been built
 
- 
-
-to run call: python3 search.py
-
-commands are separated by "UPDATE" messages
-
- 
-
-Good luck! I know that it's not complete but I tried really hard and I feel like I learned a lot!
-
- 
-
-Thank you Curtis :)
+Have Fun :)
