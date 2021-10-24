@@ -212,7 +212,7 @@ class Move(Action):
       diff = goal - curr
       total_diff += diff
     for dest in dest_list:
-      model["sectors"][dest][item]
+      # model["sectors"][dest][item]
       curr = model["sectors"][dest][item]
       diff = goal - curr
       dest_goal_perc = diff / total_diff
@@ -355,7 +355,7 @@ class Build(Action):
                       model['sectors'][self.sect]['lcm'] = lcm - (ship_info[self.v_type]['lcm'] * self.quantity)
                       model['sectors'][self.sect]['hcm'] = hcm - (ship_info[self.v_type]['hcm'] * self.quantity)
                       model['sectors'][self.sect]['avail'] = avail - (ship_info[self.v_type]['avail'] * self.quantity)
-                      model['ships']["fishing"] += self.quantity
+                      model['ships']['fishing'] = self.quantity
                       return("build " + self.kind + " " + self.sect[1:-1].replace(" ","") + " " + "fb" + " " + str(self.quantity))
                     else:
                       print("not enough money. cost of frigate is:", str(ship_info[self.v_type]['cost']) + ".", "Money in country:", str(model['country']['money']))

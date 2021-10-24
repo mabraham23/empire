@@ -2,6 +2,7 @@ import sys
 import os
 import pickle
 import copy
+import math
 
 sys.path.append(".")
 
@@ -40,31 +41,9 @@ class Update():
       print(model['sectors'][key])
       print()
   
-  def calculate_avail(self, civ, sctwork, milit, uw):
-    etu = 60
-    avail = round((civ * sctwork / 100.0 + milit / 2.5 + uw) * etu / 100.0)
-    return avail
 
   
-  def avail_setter(sector):
-    avail = sector["avail"]
-    avail = avail / (2 * 100)
-    if sector["newdes"] != sector["des"]:
-      build = 4 * avail / 100
-      if build < sector["effic"]:
-        sector["effic"] -= build
-      else:
-        build = sector["effic"]
-        sector["effic"] = 0
-        sector["des"] = sector["newdes"]
-      avail -= build / 4 * 100
-    if sector["newdes"] == sector["des"]:
-      delta = avail / 100
-      build = min(delta, 100 - sector["effic"])
-      sector["effic"] += build
-      avail -= build * 100
 
-    sector["avail"] = (sector["avail"] / 2 + avail / 100)
 
 
   def get_dist_center_of_sector(self, sector):
@@ -74,11 +53,17 @@ class Update():
     return dist_sect
 
 
-  def update_new_sectors(self, model):
-    for key in model['sectors']:
-      if ( model['sectors'][key]['newdes'] != model['sectors'][key]['des'] ):
-        # print(model['sectors'][key]['newdes'])
-        model['sectors'][key]['des'] = model['sectors'][key]['newdes']
+  # def update_new_sectors(self, model):
+  #   for key in model['sectors']:
+  #     if ( model['sectors'][key]['newdes'] != model['sectors'][key]['des'] ):
+  #       # print(model['sectors'][key]['newdes'])
+  #       model['sectors'][key]['des'] = model['sectors'][key]['newdes']
+
+
+  def calculate_avail(self, civ, sctwork, milit, uw):
+    etu = 60
+    avail = math.floor((civ * sctwork / 100.0 + milit / 2.5 + uw) * etu / 100.0)
+    return avail
 
   def set_avail(self, model):
     for key in model['sectors']:
@@ -114,85 +99,151 @@ class Update():
               m = DistMove(t_item, dist_sect, difference, key)
               m.run(model)
 
-  def sector_effic(self, model):
-    pass
+  def set_effic(self, model):
+    for key in model["sectors"]:
+      avail = model["sectors"][key]["avail"]
+      avail = avail / 2 * 100
+      if model["sectors"][key]["newdes"] != model["sectors"][key]["des"]:
+        build = 4 * avail / 100
+        if build < model["sectors"][key]["effic"]:
+          model["sectors"][key]["effic"] -= build
+        else:
+          build = model["sectors"][key]["effic"]
+          model["sectors"][key]["effic"] = 0
+          model["sectors"][key]["des"] = model["sectors"][key]["newdes"]
+        avail -= build / 4 * 100
+      if model["sectors"][key]["newdes"] == model["sectors"][key]["des"]:
+        delta = avail / 100
+        build = min(delta, 100 - model["sectors"][key]["effic"])
+        model["sectors"][key]["effic"] += math.floor(build)
+        avail -= build * 100
 
-  def harvest_natural_reso(self, model):
-    if model['sectors']['effic'] > 60:
-      for key in model['sectors']:
-        product_effic = model['sectors'][key]['effic'] / 100
-        if model['sectors'][key]['des'] == 'm':
+      model["sectors"][key]["avail"] = model["sectors"][key]["avail"] / 2 + avail / 100
+
+  def harvest_natural_resources(self, model):
+    for key in model["sectors"]:
+      if model['sectors'][key]['effic'] > 60:
+        # mining resources
+        if model['sectors'][key]['des'] == 10:
+          product_effic = model['sectors'][key]['effic'] / 100
           product_effic *= (model['sectors'][key]['min'] / 100)
           worker_limit = (model['sectors'][key]['avail'] * product_effic) 
-          material_consume = min(worker_limit, model['sectors'][key]['avail'])
+          material_consume = worker_limit
+          # material_consume = min(worker_limit, model['sectors'][key]['avail'])
           output = material_consume * product_effic
-          model['sectors'][key]['iron'] += output
-          model['sectors'][key]['avail'] -= round(material_consume/product_effic)
 
-        
+          model['sectors'][key]['iron'] += output
+          model['sectors'][key]['avail'] -= math.floor(material_consume/product_effic)
+          if (product_effic > 0):
+            model['sectors'][key]['avail'] -= math.floor(material_consume/product_effic)
+
+        # harvest agricultrue
+        elif model['sectors'][key]['des'] == 15:
+          product_effic = model['sectors'][key]['effic'] / 100
+          product_effic *= (model['sectors'][key]['fert'] / 100)
+          worker_limit = (model['sectors'][key]['avail'] * product_effic) 
+          material_consume = worker_limit
+          # material_consume = min(worker_limit, model['sectors'][key]['avail'])
+          output = material_consume * product_effic
+
+          model['sectors'][key]['food'] += output
+          if (product_effic > 0):
+            model['sectors'][key]['avail'] -= math.floor(material_consume/product_effic)
+      
 
   def produce_manufactured_goods(self, model):
-    for key in model['sectors']:
-      #food
-      if model["sectors"][key]["des"] == 15:
-        food = model["sectors"][key]["food"]
-        food += 100
-        model["sectors"][key]["food"] = food
-      #mines
-      if model["sectors"][key]["des"] == 10:
-        iron = model["sectors"][key]["iron"]
-        iron += 300
-        model["sectors"][key]["iron"] = int(iron)
-      # lcm
-      if model["sectors"][key]["des"] == 17:
-        iron = model["sectors"][key]["iron"]
-        lcm = iron * 0.4
-        model["sectors"][key]["lcm"] = int(lcm)
-        model["sectors"][key]["iron"] = 0
-      # hcm
-      if model["sectors"][key]["des"] == 18:
-        iron = model["sectors"][key]["iron"]
-        hcm = iron * 0.3
-        model["sectors"][key]["hcm"] = int(hcm)
-        model["sectors"][key]["iron"] = 0
-        
+    for key in model["sectors"]:
+      if model['sectors'][key]['effic'] > 60:
+        # lcm production
+        # lcm's are in a 1:! ratio with iron
+        if model['sectors'][key]['des'] == 17:
+          product_effic = model['sectors'][key]['effic'] / 100
+          product_effic *= (model['sectors'][key]['iron'] / 100)
+          worker_limit = (model['sectors'][key]['avail'] * product_effic) 
+          material_limit = model["sectors"][key]["iron"]
+          material_consume = min(worker_limit, material_limit)
+          output = material_consume * product_effic
+
+          model['sectors'][key]['iron'] -= output
+          model['sectors'][key]['lcm'] += output
+          if ( product_effic > 0 ):
+            model['sectors'][key]['avail'] -= math.floor(material_consume/product_effic)
+
+        # hcm production
+        # hcm is 2 iron for 1 hcm
+        elif model['sectors'][key]['des'] == 18:
+          product_effic = model['sectors'][key]['effic'] / 100
+          product_effic *= (model['sectors'][key]['iron'] / 100)
+          worker_limit = (model['sectors'][key]['avail'] * product_effic) 
+          material_limit = math.floor(model["sectors"][key]["iron"] / 2)
+          material_consume = min(worker_limit, material_limit)
+          output = material_consume * product_effic
+
+          model['sectors'][key]['iron'] -= output
+          model['sectors'][key]['hcm'] += output
+          if ( product_effic > 0 ):
+            model['sectors'][key]['avail'] -= math.floor(material_consume/product_effic)
 
 
-  def ship_effic(self, model):
+  def set_ship_effic(self, model):
     pass
 
   def food_consumption(self, model):
-    pass
+    for key in model["sectors"]:
+      civil = model["sectors"][key]["civil"]
+      food_consumed = math.floor(civil * 0.035 )
+      sect_food = model["sectors"][key]["food"]
+      food_remaining = sect_food - food_consumed
+      if food_remaining < 0:
+        food_remaining = 0
+      model["sectors"][key]["food"] = food_remaining
+
 
   def population_growth(self, model):
     growth_rate = 2
     for key in model["sectors"]:
       civils = model["sectors"][key]["civil"]
-      civils += civils * growth_rate
-      if civils > 1000:
-        civils = 1000
-      model["sectors"][key]["civil"] = civils
-
+      food = model["sectors"][key]["food"]
+      food_needed = math.floor( civils * 0.035 )
+      if food >= food_needed:
+        civils += civils * growth_rate
+        if civils > 1000:
+          civils = 1000
+        model["sectors"][key]["civil"] = civils
+      else:
+        food_diff = food_needed - food
+        unfed_civils = math.floor(food_diff / 0.035)
+        new_civils = civils - unfed_civils
+        if new_civils < 0:
+          new_civils = 0
+        model["sectors"][key]["civil"] = new_civils
 
   def refil_mobility(self, model):
     for key in model['sectors']:
-      model["sectors"][key]["mobil"] = 127
+      if model["sectors"][key]["mobil"] < 127:
+        model["sectors"][key]["mobil"] += 60
+        if model["sectors"][key]["mobil"] > 127:
+          model["sectors"][key]["mobil"] = 127
+
+
       
   def run(self, model):
     #prepare stage
-    self.update_new_sectors(model)
     self.set_avail(model)
+    self.refil_mobility(model)
+    self.food_consumption(model)
 
     #production stage
-    # self.update_efficiency()
-
+    self.set_effic(model)
+    self.set_ship_effic(model)
+    self.harvest_natural_resources(model)
     self.produce_manufactured_goods(model)
-    # distribute items from outside sectors to distribution center
-    self.send_to_distribution(model)
-    # distribute item from distribution center to outside sectors
-    self.distribute_to_sectors(model)
-    self.refil_mobility(model)
     self.population_growth(model)
+    self.send_to_distribution(model)
+    self.distribute_to_sectors(model)
+
+
+
         
 
 

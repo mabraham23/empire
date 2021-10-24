@@ -46,18 +46,18 @@ for line in sys.stdin.readlines():
 			sectors[xy_key] = copy_sector_info
 
 if doc_type == "sect":				
-	for key in sectors:
-		print()
-		print(key)
-		print(sectors[key])
-		print()
+	# for key in sectors:
+		# print()
+		# print(key)
+		# print(sectors[key])
+		# print()
 
 	fout = open("data/sectors.p", "wb")
 	pickle.dump(sectors, fout)
 	fout.close()
 
 elif doc_type == "meta-sect":				
-	print(sectorinfo)
+	# print(sectorinfo)
 
 	fout = open("data/sector-info.p", "wb")
 	pickle.dump(sectorinfo, fout)

@@ -1,6 +1,6 @@
 #!/bin/bash
-export COUNTRY=2
-export PLAYER=2
+export COUNTRY=13
+export PLAYER=13
 export EMPIREPORT=2833
 export EMPIREHOST=empire
 stop=0

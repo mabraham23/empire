@@ -4,6 +4,7 @@ from model import createModel
 from state import State
 from update_simulator import Update, print_country
 import copy
+import math
 
 
 class Model_Actions():
@@ -26,6 +27,17 @@ class Model_Actions():
     print(actions)
 
   def macro_designate(self, state):
+
+    # if a designation strategy has been made, don't change it
+    strategy_made = False
+    for key in state.model['sectors']:
+      if state.model["sectors"][key]["des"] == 24:
+        strategy_made = True
+
+    if not strategy_made:
+      return [[]]
+
+
     moves_list = []
     mineral_heavy_list = []
     fert_heavy_list = []
@@ -44,6 +56,7 @@ class Model_Actions():
       # populate fert dict
       sect_fert = state.model['sectors'][key]['fert']
       fert_dict[key] = sect_fert
+
 
     # mining heavy designate
     # keep 0,0 as the capital
@@ -163,7 +176,7 @@ class Model_Actions():
     # 1 harbor 10 %
 
     # evenly distribute
-    even_pop = round( total_pop / num_sects)
+    even_pop = math.floor( total_pop / num_sects)
     over = []
     under = []
     small_list = []
@@ -249,17 +262,16 @@ class Model_Actions():
     return [actions_list]
 
   def build(self, state):
-    if state.model['ships']['fishing'] < 1:
+    moves_list = []
+    if len(state.model['ships']) < 1:
       harb = ""
-      moves_list = []
       for key in state.model["sectors"]:
         if state.model["sectors"][key]["des"] == 12:
           harb = key
-      b = Build("ship", harb, "fishing", 1)
-      moves_list.append(b)
-      return [moves_list]
-    else:
-      return [[]]
+      if harb != "": 
+        b = Build("ship", harb, "fishing", 1)
+        moves_list.append(b)
+    return [moves_list]
 
   # returns a list of actions
   def create_actions(self, state):
@@ -280,14 +292,17 @@ class Model_Actions():
   def result(self, state_1, actions_list, arriving_action):
     model_copy = copy.deepcopy(state_1.model)
     primitives = []
-    for action in actions_list:
-      if arriving_action != "update":
-        p = action.run(model_copy)
-        if p != None:
-          primitives.append(p)
-      else:
-        p = action.run(model_copy)
-        primitives.append("UPDATE")
+    if len(actions_list) > 0:
+      for action in actions_list:
+        if arriving_action != "update":
+          p = action.run(model_copy)
+          if p != None:
+            primitives.append(p)
+        else:
+          p = action.run(model_copy)
+          primitives.append("UPDATE")
+    else:
+      primitives = []
     
     state_2 = State(model_copy, state_1, primitives, arriving_action, self.step_cost(arriving_action, len(actions_list)))
     return state_2
@@ -298,7 +313,7 @@ class Model_Actions():
       if state.model["sectors"][key]["civil"] < 1000:
         max_pop = False
         break
-    if state.model["ships"]["fishing"] >= 1 and max_pop:
+    if len(state.model["ships"]) >= 1 and max_pop:
       return True
     return False
 

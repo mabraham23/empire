@@ -51,13 +51,13 @@ for line in sys.stdin.readlines():
 
 
 if doc_type == "country":				
-	print(country)
+	# print(country)
 	fout = open("data/country.p", "wb")
 	pickle.dump(country, fout)
 	fout.close()
 
 elif doc_type == "meta":				
-	print(countryinfo)
+	# print(countryinfo)
 
 	fout = open("data/country-info.p", "wb")
 	pickle.dump(countryinfo, fout)

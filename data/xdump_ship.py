@@ -5,12 +5,12 @@ import os
 import pickle
 import copy
 
-if os.path.exists("data/ship.p"):
-	fin = open("data/ship.p", "rb")
-	ship = pickle.load(fin)
-	fin.close()
-else:
-	ship = {}
+# if os.path.exists("data/ship.p"):
+# 	fin = open("data/ship.p", "rb")
+# 	ship = pickle.load(fin)
+# 	fin.close()
+# else:
+ship = {}
 
 if os.path.exists("data/ship-info.p"):
 	fin = open("data/ship-info.p", "rb")
@@ -39,16 +39,19 @@ for line in sys.stdin.readlines():
 		elif doc_type == "ship":
 			copy_ship_info = copy.deepcopy(shipinfo)
 			for key, word in zip(copy_ship_info, words):
-				copy_ship_info[key] = int(word)
+				if word == '""':
+					copy_ship_info[key] = word
+				else:
+					copy_ship_info[key] = int(word)
 			uid = int(words[0])
 			ship[uid] = copy_ship_info 
 
 if doc_type == "ship":				
 	# for key in ship:
-	# 	print()
-	# 	print(key)
-	# 	print(ship[key])
-	# 	print()
+		# print()
+		# print(key)
+		# print(ship[key])
+		# print()
 
 	fout = open("data/ship.p", "wb")
 	pickle.dump(ship, fout)

@@ -20,20 +20,21 @@ def createModel():
   else:
     print("sectors file not created")
   
-  # if os.path.exists("data/ship.p"):
-  #   fin = open("data/ship.p", "rb")
-  #   ships = pickle.load(fin)
-  #   fin.close()
-  # else:
-  #   print("ships file not created")
+  if os.path.exists("data/ship.p"):
+    fin = open("data/ship.p", "rb")
+    ships = pickle.load(fin)
+    fin.close()
+  else:
+    print("ships file not created")
 
   model = {}
   sectors_copy = copy.deepcopy(sectors)
   country_copy = copy.deepcopy(country)
-  # ships_copy = copy.deepcopy(ships)
+  ships_copy = copy.deepcopy(ships)
+
   model["country"] = country_copy
   model["sectors"] = sectors_copy
-  model["ships"] = {"fishing": 0}
+  model["ships"] = ships_copy
   return model
 
 def show(self):
