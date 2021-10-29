@@ -1,7 +1,7 @@
 #!/bin/bash
-export COUNTRY=13
-export PLAYER=13
-export EMPIREPORT=2833
+export COUNTRY=2
+export PLAYER=2
+export EMPIREPORT=2836
 export EMPIREHOST=empire
 stop=0
 ./explore.py

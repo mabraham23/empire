@@ -59,6 +59,16 @@ class Update():
   #       # print(model['sectors'][key]['newdes'])
   #       model['sectors'][key]['des'] = model['sectors'][key]['newdes']
 
+  def set_work(self, model):
+    for key in model["sectors"]:
+      work = model["sectors"][key]["work"]
+      civil = model["sectors"][key]["civil"]
+      add_work = math.floor(civil / 3)
+      add_work += work
+      if ( add_work > 100 ):
+        add_work = 100
+      model["sectors"][key]["work"] += add_work
+
 
   def calculate_avail(self, civ, sctwork, milit, uw):
     etu = 60
@@ -229,6 +239,7 @@ class Update():
       
   def run(self, model):
     #prepare stage
+    self.set_work(model)
     self.set_avail(model)
     self.refil_mobility(model)
     self.food_consumption(model)
