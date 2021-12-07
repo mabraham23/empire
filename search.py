@@ -13,7 +13,7 @@ def search(initial_state):
     actions, arriving_action = m.create_actions(s)
     for a in actions:
       new_state = m.result(s, a, arriving_action)
-      Q.insert(0, new_state)
+      Q.append(new_state)
   return
 
 
